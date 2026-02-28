@@ -1,27 +1,33 @@
 from world import World
-from utils import gini
 import csv
 
 
-def run_simulation():
-    world = World(n_agents=50, seed=42)
+def run_simulation(n_agents=50, timesteps=300, seed=42):
+    world = World(n_agents=n_agents, seed=seed)
 
-    TIMESTEPS = 300
-
-    for _ in range(TIMESTEPS):
+    for _ in range(timesteps):
         world.step()
 
-    if len(world.log) > 0:
+    if world.log:
         with open("simulation_log.csv", "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=world.log[0].keys())
             writer.writeheader()
             writer.writerows(world.log)
 
-    final_wealth = [agent.wealth() for agent in world.agents]
+    m = world.summary_metrics()
 
-    print("Alive:", len(world.agents))
-    print("Final Wealth:", final_wealth)
-    print("Gini:", round(gini(final_wealth), 3))
+    print("\n===== FINAL SUMMARY =====")
+    print("Alive:", m["alive"])
+    print("Total Dead:", m["dead_total"])
+    print("Final Price:", round(m["price"], 4))
+    print("Gini (Survivors):", round(m["gini_survivor"], 4))
+    print("Gini (Population):", round(m["gini_population"], 4))
+    print(
+        "Min / Median / Max Wealth:",
+        round(m["min_wealth"], 2),
+        round(m["median_wealth"], 2),
+        round(m["max_wealth"], 2),
+    )
 
 
 if __name__ == "__main__":
