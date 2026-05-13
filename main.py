@@ -52,6 +52,11 @@ def run_simulation(n_agents=50, timesteps=300, seed=42, policy="random", scenari
 def run_experiments(policies=("random", "rule"), seeds=(1, 2, 3, 4, 5), n_agents=50, timesteps=300):
     scenarios = {
         "default": None,
+        "moderate_scarcity": {
+            "base_gain": 2.2,
+            "ideal_food_per_agent": 6.5,
+            "trade_limit_ratio": 0.4,
+        },
         "scarcity": {
             "base_gain": 1.7,
             "ideal_food_per_agent": 7.0,
