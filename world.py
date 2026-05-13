@@ -2,6 +2,13 @@ import random
 import math
 
 
+LLM_POLICIES = {
+    "llm_survival",
+    "llm_social_welfare",
+    "llm_wealth_maximizing",
+}
+
+
 class World:
     def __init__(self, n_agents=50, seed=42, config=None, policy="random"):
         self.rng = random.Random(seed)
@@ -107,7 +114,8 @@ class World:
     def decide_llm_action(self, agent, context):
         """
         Placeholder for future LLM-backed decision making.
-        Later this method will call a model and return only: gather or work.
+        Later this method will call a model with a policy-specific objective
+        and return only: gather or work.
         """
         # Temporary fallback until LLM integration is implemented.
         return self.rng.choice(["gather", "work"])
@@ -119,8 +127,9 @@ class World:
         Policies:
         - random: stochastic baseline
         - rule: deterministic non-LLM baseline
-        - llm: placeholder for future LLM integration
-        - finetuned_llm: placeholder for future fine-tuned LLM integration
+        - llm_survival: LLM objective focused on individual survival
+        - llm_social_welfare: LLM objective focused on society-level stability
+        - llm_wealth_maximizing: LLM objective focused on individual wealth
         """
         context = self.build_decision_context(agent)
 
@@ -142,7 +151,7 @@ class World:
 
             return self.normalize_action(self.rng.choice(["gather", "work"]))
 
-        if self.policy in {"llm", "finetuned_llm"}:
+        if self.policy in LLM_POLICIES:
             return self.normalize_action(self.decide_llm_action(agent, context))
 
         raise ValueError(f"Unknown policy: {self.policy}")
