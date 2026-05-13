@@ -1,9 +1,28 @@
 import random
+import math
 
 
 class World:
-    def __init__(self, n_agents: int = 50, seed: int = 42):
-        random.seed(seed)
+    def __init__(self, n_agents=50, seed=42, config=None, policy="random"):
+        self.rng = random.Random(seed)
+
+        # ---- Config ----
+        default_config = {
+            "base_price": 2.0,
+            "price_alpha": 1.2,
+            "price_min": 0.5,
+            "price_max": 10.0,
+            "ideal_food_per_agent": 6.0,
+            "food_cap": 25.0,
+            "coin_cap": 60.0,
+            "base_gain": 3.0,
+            "reserve_food": 3.0,
+            "sell_min": 4.0,
+            "trade_limit_ratio": 0.5,
+        }
+
+        self.cfg = {**default_config, **(config or {})}
+        self.policy = policy
 
         self.timestep = 0
         self.initial_population = n_agents
@@ -15,76 +34,138 @@ class World:
                 "id": i,
                 "food": 5.0,
                 "coin": 5.0,
-                "productivity": random.uniform(0.8, 1.2)
+                "productivity": self.rng.uniform(0.8, 1.2)
             })
 
-        self.log = []
+        self.agent_log = []
+        self.step_log = []
 
-        # --- Price system ---
-        self.base_price = 2.0
-        self.food_price = self.base_price
-        self.price_alpha = 1.2
-        self.price_min = 0.5
-        self.price_max = 10.0
-        self.ideal_food_per_agent = 6.0
+        self.food_price = self.cfg["base_price"]
 
-        # --- Production bounds ---
-        self.food_cap = 25.0
-        self.coin_cap = 60.0
-        self.base_gain = 3.0
-
-        # --- Market rules ---
-        self.reserve_food = 3.0
-        self.sell_min = 4.0
-        self.trade_limit_ratio = 0.5
-
-    # ------------------------------
-    # Core economics
-    # ------------------------------
+    # --------------------
+    # Core
+    # --------------------
 
     def wealth(self, agent):
         return agent["coin"] + agent["food"] * self.food_price
 
     def update_price(self):
-        total_food = sum(a["food"] for a in self.agents)
+        total_food = sum(agent["food"] for agent in self.agents)
         alive = max(len(self.agents), 1)
 
-        ideal_total = alive * self.ideal_food_per_agent
+        ideal_total = alive * self.cfg["ideal_food_per_agent"]
         scarcity_ratio = ideal_total / max(total_food, 1e-6)
 
-        price = self.base_price * (scarcity_ratio ** self.price_alpha)
-        self.food_price = max(self.price_min, min(self.price_max, price))
+        price = self.cfg["base_price"] * (scarcity_ratio ** self.cfg["price_alpha"])
+        self.food_price = max(
+            self.cfg["price_min"],
+            min(self.cfg["price_max"], price)
+        )
 
-    def bounded_gain(self, current, cap, raw_gain):
+    def bounded_gain(self, current, cap, raw):
         factor = 1.0 - min(max(current / cap, 0.0), 1.0)
-        return max(0.0, raw_gain * factor)
+        return max(0.0, raw * factor)
 
-    # ------------------------------
-    # Policy
-    # ------------------------------
+    def build_decision_context(self, agent):
+        """
+        Builds a compact decision context for rule-based and future LLM policies.
+        This keeps the input state stable across random, rule, LLM, and fine-tuned LLM experiments.
+        """
+        total_food = sum(a["food"] for a in self.agents)
+        alive_count = len(self.agents)
+        ideal_total = max(alive_count, 1) * self.cfg["ideal_food_per_agent"]
+        scarcity_ratio = ideal_total / max(total_food, 1e-6)
 
-    def random_policy(self):
-        return random.choice(["gather", "work"])
+        return {
+            "timestep": self.timestep,
+            "agent_id": agent["id"],
+            "food": round(agent["food"], 3),
+            "coin": round(agent["coin"], 3),
+            "productivity": round(agent["productivity"], 3),
+            "wealth": round(self.wealth(agent), 3),
+            "food_price": round(self.food_price, 4),
+            "alive_count": alive_count,
+            "dead_total": self.dead_count,
+            "total_food": round(total_food, 3),
+            "scarcity_ratio": round(scarcity_ratio, 4),
+        }
 
-    # ------------------------------
+    def normalize_action(self, action):
+        """
+        Normalizes model or policy output into a valid simulator action.
+        Invalid outputs safely fall back to gather, which is survival-oriented.
+        """
+        if action is None:
+            return "gather"
+
+        normalized = str(action).strip().lower()
+        if normalized in {"gather", "work"}:
+            return normalized
+
+        return "gather"
+
+    def decide_llm_action(self, agent, context):
+        """
+        Placeholder for future LLM-backed decision making.
+        Later this method will call a model and return only: gather or work.
+        """
+        # Temporary fallback until LLM integration is implemented.
+        return self.rng.choice(["gather", "work"])
+
+    def decide_action(self, agent):
+        """
+        Selects an action for a single agent.
+
+        Policies:
+        - random: stochastic baseline
+        - rule: deterministic non-LLM baseline
+        - llm: placeholder for future LLM integration
+        - finetuned_llm: placeholder for future fine-tuned LLM integration
+        """
+        context = self.build_decision_context(agent)
+
+        if self.policy == "random":
+            return self.normalize_action(self.rng.choice(["gather", "work"]))
+
+        if self.policy == "rule":
+            if context["food"] < 2.0:
+                return "gather"
+
+            if context["coin"] < context["food_price"]:
+                return "work"
+
+            if context["food_price"] > self.cfg["base_price"] * 1.5 and context["food"] < 5.0:
+                return "gather"
+
+            if context["food"] > 8.0 and context["coin"] < 10.0:
+                return "work"
+
+            return self.normalize_action(self.rng.choice(["gather", "work"]))
+
+        if self.policy in {"llm", "finetuned_llm"}:
+            return self.normalize_action(self.decide_llm_action(agent, context))
+
+        raise ValueError(f"Unknown policy: {self.policy}")
+
+    # --------------------
     # Trade
-    # ------------------------------
+    # --------------------
 
     def try_buy_food(self, buyer):
         if buyer["coin"] < self.food_price:
             return False
 
         sellers = [
-            a for a in self.agents
-            if a["id"] != buyer["id"]
-            and a["food"] >= self.sell_min
-            and a["food"] > self.reserve_food
+            agent for agent in self.agents
+            if agent["id"] != buyer["id"]
+            and agent["food"] >= self.cfg["sell_min"]
+            and agent["food"] > self.cfg["reserve_food"]
         ]
 
         if not sellers:
             return False
 
-        seller = random.choice(sellers)
+        seller = self.rng.choice(sellers)
 
         buyer["coin"] -= self.food_price
         buyer["food"] += 1.0
@@ -94,98 +175,114 @@ class World:
 
         return True
 
-    # ------------------------------
+    # --------------------
     # Step
-    # ------------------------------
+    # --------------------
 
     def step(self):
+        deaths_this_step = 0
+        trades = 0
+        trade_limit = max(1, int(len(self.agents) * self.cfg["trade_limit_ratio"]))
+
         # (a) consumption
-        for a in self.agents:
-            a["food"] = max(0.0, a["food"] - 1.0)
+        for agent in self.agents:
+            agent["food"] = max(0.0, agent["food"] - 1.0)
 
         # (b) price update
         self.update_price()
 
         # (c) emergency trade + death
         survivors = []
-        for a in self.agents:
-            if a["food"] <= 0.0:
-                if not self.try_buy_food(a):
+        for agent in self.agents:
+            if agent["food"] <= 0.0:
+                if trades < trade_limit and self.try_buy_food(agent):
+                    trades += 1
+                else:
                     self.dead_count += 1
-                    self.log.append({
-                        "timestep": self.timestep,
-                        "agent_id": a["id"],
-                        "action": "dead",
-                        "food": 0.0,
-                        "coin": round(a["coin"], 3),
-                        "price": round(self.food_price, 4),
-                        "wealth": 0.0
-                    })
+                    deaths_this_step += 1
                     continue
-            survivors.append(a)
+            survivors.append(agent)
 
         self.agents = survivors
 
         # (d) decision
-        actions = {a["id"]: self.random_policy() for a in self.agents}
+        actions = {}
+        decision_contexts = {}
+        for agent in self.agents:
+            decision_contexts[agent["id"]] = self.build_decision_context(agent)
+            actions[agent["id"]] = self.decide_action(agent)
+
+        gather_count = sum(1 for action in actions.values() if action == "gather")
+        work_count = sum(1 for action in actions.values() if action == "work")
 
         # (e) production
-        for a in self.agents:
-            raw = self.base_gain * a["productivity"] + random.uniform(-0.3, 0.3)
+        for agent in self.agents:
+            raw = self.cfg["base_gain"] * agent["productivity"] + self.rng.uniform(-0.3, 0.3)
 
-            if actions[a["id"]] == "gather":
-                gain = self.bounded_gain(a["food"], self.food_cap, raw)
-                a["food"] += gain
+            if actions[agent["id"]] == "gather":
+                gain = self.bounded_gain(agent["food"], self.cfg["food_cap"], raw)
+                agent["food"] += gain
             else:
-                gain = self.bounded_gain(a["coin"], self.coin_cap, raw)
-                a["coin"] += gain
+                gain = self.bounded_gain(agent["coin"], self.cfg["coin_cap"], raw)
+                agent["coin"] += gain
 
-        # (f) limited trade
-        trade_limit = max(1, int(len(self.agents) * self.trade_limit_ratio))
-        trades = 0
+        # (f) normal trade
+        buyers = [agent for agent in self.agents if agent["food"] < 1.0]
 
-        buyers = [a for a in self.agents if a["food"] < 1.0]
-
-        for b in buyers:
+        for buyer in buyers:
             if trades >= trade_limit:
                 break
-            if self.try_buy_food(b):
+            if self.try_buy_food(buyer):
                 trades += 1
 
-        # (g) log
-        for a in self.agents:
-            self.log.append({
+        # (g) invariants
+        for agent in self.agents:
+            assert agent["food"] >= 0
+            assert agent["coin"] >= 0
+            assert not math.isnan(agent["food"])
+            assert not math.isnan(agent["coin"])
+
+        # (h) logs
+        total_food = sum(agent["food"] for agent in self.agents)
+        total_coin = sum(agent["coin"] for agent in self.agents)
+
+        from utils import gini
+        survivor_wealth = [self.wealth(agent) for agent in self.agents]
+        population_wealth = survivor_wealth + [0.0] * (self.initial_population - len(self.agents))
+
+        gini_survivor = gini(survivor_wealth) if survivor_wealth else 0.0
+        gini_population = gini(population_wealth) if population_wealth else 0.0
+
+        self.step_log.append({
+            "timestep": self.timestep,
+            "policy": self.policy,
+            "alive": len(self.agents),
+            "dead_total": self.dead_count,
+            "deaths_this_step": deaths_this_step,
+            "total_food": round(total_food, 3),
+            "total_coin": round(total_coin, 3),
+            "price": round(self.food_price, 4),
+            "trades": trades,
+            "gather_count": gather_count,
+            "work_count": work_count,
+            "gini_survivor": round(gini_survivor, 4),
+            "gini_population": round(gini_population, 4),
+        })
+
+        for agent in self.agents:
+            self.agent_log.append({
                 "timestep": self.timestep,
-                "agent_id": a["id"],
-                "action": actions[a["id"]],
-                "food": round(a["food"], 3),
-                "coin": round(a["coin"], 3),
+                "policy": self.policy,
+                "agent_id": agent["id"],
+                "food": round(agent["food"], 3),
+                "coin": round(agent["coin"], 3),
+                "productivity": round(agent["productivity"], 3),
+                "wealth": round(self.wealth(agent), 3),
                 "price": round(self.food_price, 4),
-                "wealth": round(self.wealth(a), 3)
+                "scarcity_ratio": decision_contexts[agent["id"]]["scarcity_ratio"],
+                "alive_count": decision_contexts[agent["id"]]["alive_count"],
+                "action": actions.get(agent["id"], "none"),
+                "alive": True,
             })
 
         self.timestep += 1
-
-    # ------------------------------
-    # Metrics
-    # ------------------------------
-
-    def summary_metrics(self):
-        from utils import gini
-        import statistics
-
-        alive = len(self.agents)
-
-        survivor_wealth = [self.wealth(a) for a in self.agents]
-        population_wealth = survivor_wealth + [0.0] * (self.initial_population - alive)
-
-        return {
-            "alive": alive,
-            "dead_total": self.dead_count,
-            "price": self.food_price,
-            "gini_survivor": gini(survivor_wealth) if survivor_wealth else 0.0,
-            "gini_population": gini(population_wealth) if population_wealth else 0.0,
-            "min_wealth": min(survivor_wealth) if survivor_wealth else 0.0,
-            "median_wealth": statistics.median(survivor_wealth) if survivor_wealth else 0.0,
-            "max_wealth": max(survivor_wealth) if survivor_wealth else 0.0,
-        }

@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments / Conda environments
+venv/
+.venv/
+env/
+.env/
+.conda/
+conda-env/
+ai_society_env/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Test and tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Generated simulation outputs
+logs/
+*.csv
+
+# OS/editor files
+.DS_Store
+.vscode/
+.idea/
