@@ -1,12 +1,7 @@
 import random
 import math
 
-
-LLM_POLICIES = {
-    "llm_survival",
-    "llm_social_welfare",
-    "llm_wealth_maximizing",
-}
+from policies import decide_policy_action
 
 
 class World:
@@ -111,50 +106,22 @@ class World:
 
         return "gather"
 
-    def decide_llm_action(self, agent, context):
-        """
-        Placeholder for future LLM-backed decision making.
-        Later this method will call a model with a policy-specific objective
-        and return only: gather or work.
-        """
-        # Temporary fallback until LLM integration is implemented.
-        return self.rng.choice(["gather", "work"])
 
     def decide_action(self, agent):
         """
         Selects an action for a single agent.
 
-        Policies:
-        - random: stochastic baseline
-        - rule: deterministic non-LLM baseline
-        - llm_survival: LLM objective focused on individual survival
-        - llm_social_welfare: LLM objective focused on society-level stability
-        - llm_wealth_maximizing: LLM objective focused on individual wealth
+        World is policy-agnostic: it builds the decision context and delegates
+        the actual decision strategy to the policies package.
         """
         context = self.build_decision_context(agent)
-
-        if self.policy == "random":
-            return self.normalize_action(self.rng.choice(["gather", "work"]))
-
-        if self.policy == "rule":
-            if context["food"] < 2.0:
-                return "gather"
-
-            if context["coin"] < context["food_price"]:
-                return "work"
-
-            if context["food_price"] > self.cfg["base_price"] * 1.5 and context["food"] < 5.0:
-                return "gather"
-
-            if context["food"] > 8.0 and context["coin"] < 10.0:
-                return "work"
-
-            return self.normalize_action(self.rng.choice(["gather", "work"]))
-
-        if self.policy in LLM_POLICIES:
-            return self.normalize_action(self.decide_llm_action(agent, context))
-
-        raise ValueError(f"Unknown policy: {self.policy}")
+        action = decide_policy_action(
+            policy=self.policy,
+            context=context,
+            rng=self.rng,
+            cfg=self.cfg,
+        )
+        return self.normalize_action(action)
 
     # --------------------
     # Trade
