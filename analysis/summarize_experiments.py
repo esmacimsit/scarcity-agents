@@ -1,3 +1,4 @@
+import argparse
 import csv
 import os
 import statistics
@@ -37,6 +38,9 @@ def parse_policy_and_seed(file_path):
         "llm_survival",
         "llm_social_welfare",
         "llm_wealth_maximizing",
+        "llm_survival_few_shot",
+        "llm_social_welfare_few_shot",
+        "llm_wealth_maximizing_few_shot",
     }
 
     policy = None
@@ -143,15 +147,17 @@ def summarize_step_log(file_path):
     }
 
 
-def collect_summaries():
-    if not LOG_DIR.exists():
+def collect_summaries(log_dir=LOG_DIR):
+    log_dir = Path(log_dir)
+
+    if not log_dir.exists():
         raise FileNotFoundError(
-            f"Log directory not found: {LOG_DIR}. Run `python main.py` first."
+            f"Log directory not found: {log_dir}. Run `python main.py` first."
         )
 
     summaries = []
 
-    for file_path in sorted(LOG_DIR.glob("*_step_log.csv")):
+    for file_path in sorted(log_dir.glob("*_step_log.csv")):
         summary = summarize_step_log(file_path)
         if summary is not None:
             summaries.append(summary)
@@ -200,8 +206,21 @@ def print_policy_averages(summaries):
         print(f"Average gather ratio: {avg_gather_ratio:.4f}")
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Summarize AI society experiment step logs."
+    )
+    parser.add_argument(
+        "--log-dir",
+        default=str(LOG_DIR),
+        help="Directory containing *_step_log.csv files.",
+    )
+    return parser.parse_args()
+
+
 def main():
-    summaries = collect_summaries()
+    args = parse_args()
+    summaries = collect_summaries(log_dir=args.log_dir)
     write_summary_csv(summaries)
     print_policy_averages(summaries)
 

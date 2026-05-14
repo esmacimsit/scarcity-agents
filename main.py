@@ -11,12 +11,20 @@ POLICY_SETS = {
         "llm_social_welfare",
         "llm_wealth_maximizing",
     ),
+    "few-shot": (
+        "llm_survival_few_shot",
+        "llm_social_welfare_few_shot",
+        "llm_wealth_maximizing_few_shot",
+    ),
     "all": (
         "random",
         "rule",
         "llm_survival",
         "llm_social_welfare",
         "llm_wealth_maximizing",
+        "llm_survival_few_shot",
+        "llm_social_welfare_few_shot",
+        "llm_wealth_maximizing_few_shot",
     ),
 }
 

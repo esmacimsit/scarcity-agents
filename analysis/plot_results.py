@@ -1,3 +1,4 @@
+import argparse
 import csv
 from collections import defaultdict
 from pathlib import Path
@@ -32,6 +33,9 @@ def parse_step_log_filename(file_path):
         "llm_survival",
         "llm_social_welfare",
         "llm_wealth_maximizing",
+        "llm_survival_few_shot",
+        "llm_social_welfare_few_shot",
+        "llm_wealth_maximizing_few_shot",
     }
 
     policy = None
@@ -100,19 +104,21 @@ def read_step_log(file_path):
     return parsed_rows
 
 
-def load_all_step_logs():
-    if not LOG_DIR.exists():
+def load_all_step_logs(log_dir=LOG_DIR):
+    log_dir = Path(log_dir)
+
+    if not log_dir.exists():
         raise FileNotFoundError(
-            f"Log directory not found: {LOG_DIR}. Run `python main.py` first."
+            f"Log directory not found: {log_dir}. Run `python main.py` first."
         )
 
     all_rows = []
-    for file_path in sorted(LOG_DIR.glob("*_step_log.csv")):
+    for file_path in sorted(log_dir.glob("*_step_log.csv")):
         all_rows.extend(read_step_log(file_path))
 
     if not all_rows:
         raise FileNotFoundError(
-            f"No step log files found in {LOG_DIR}. Run `python main.py` first."
+            f"No step log files found in {log_dir}. Run `python main.py` first."
         )
 
     return all_rows
@@ -174,9 +180,22 @@ def plot_metric(rows, metric, ylabel, title, output_filename):
     print(f"Saved figure: {output_path}")
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Plot AI society experiment step logs."
+    )
+    parser.add_argument(
+        "--log-dir",
+        default=str(LOG_DIR),
+        help="Directory containing *_step_log.csv files.",
+    )
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
     FIGURE_DIR.mkdir(parents=True, exist_ok=True)
-    rows = load_all_step_logs()
+    rows = load_all_step_logs(log_dir=args.log_dir)
 
     plot_metric(
         rows=rows,
