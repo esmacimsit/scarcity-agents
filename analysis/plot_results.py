@@ -26,14 +26,31 @@ def parse_step_log_filename(file_path):
     left_side, seed_text = stem.rsplit("_seed_", 1)
     seed = int(seed_text)
 
-    known_policies = {"random", "rule", "llm", "finetuned_llm"}
-    left_parts = left_side.split("_")
+    known_policies = {
+        "random",
+        "rule",
+        "llm_survival",
+        "llm_social_welfare",
+        "llm_wealth_maximizing",
+    }
 
-    if left_parts[-1] not in known_policies:
+    policy = None
+    scenario = None
+
+    for candidate_policy in sorted(known_policies, key=len, reverse=True):
+        if left_side == candidate_policy:
+            policy = candidate_policy
+            scenario = "default"
+            break
+
+        suffix = f"_{candidate_policy}"
+        if left_side.endswith(suffix):
+            policy = candidate_policy
+            scenario = left_side[: -len(suffix)] or "default"
+            break
+
+    if policy is None:
         raise ValueError(f"Could not parse policy from filename: {filename}")
-
-    policy = left_parts[-1]
-    scenario = "_".join(left_parts[:-1])
 
     return scenario, policy, seed
 

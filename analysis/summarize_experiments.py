@@ -31,13 +31,30 @@ def parse_policy_and_seed(file_path):
     left_side = parts[0]
     seed = int(parts[1])
 
-    known_policies = {"random", "rule", "llm", "finetuned_llm"}
-    left_parts = left_side.split("_")
+    known_policies = {
+        "random",
+        "rule",
+        "llm_survival",
+        "llm_social_welfare",
+        "llm_wealth_maximizing",
+    }
 
-    if left_parts[-1] in known_policies:
-        policy = left_parts[-1]
-        scenario = "_".join(left_parts[:-1]) or "default"
-    else:
+    policy = None
+    scenario = None
+
+    for candidate_policy in sorted(known_policies, key=len, reverse=True):
+        if left_side == candidate_policy:
+            policy = candidate_policy
+            scenario = "default"
+            break
+
+        suffix = f"_{candidate_policy}"
+        if left_side.endswith(suffix):
+            policy = candidate_policy
+            scenario = left_side[: -len(suffix)] or "default"
+            break
+
+    if policy is None:
         policy = left_side
         scenario = "default"
 

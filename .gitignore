@@ -27,6 +27,7 @@ htmlcov/
 # Generated simulation outputs
 logs/
 *.csv
+*.png
 
 # OS/editor files
 .DS_Store

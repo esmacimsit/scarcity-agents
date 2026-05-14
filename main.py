@@ -1,25 +1,57 @@
 from world import World
+import argparse
 import csv
 import os
 
 
-def run_simulation(n_agents=50, timesteps=300, seed=42, policy="random", scenario="default", config=None, output_dir="logs"):
+POLICY_SETS = {
+    "baseline": ("random", "rule"),
+    "zero-shot": (
+        "llm_survival",
+        "llm_social_welfare",
+        "llm_wealth_maximizing",
+    ),
+    "all": (
+        "random",
+        "rule",
+        "llm_survival",
+        "llm_social_welfare",
+        "llm_wealth_maximizing",
+    ),
+}
+
+DEFAULT_POLICY_SET = "baseline"
+
+
+def run_simulation(
+    n_agents=50,
+    timesteps=300,
+    seed=42,
+    policy="random",
+    scenario="default",
+    config=None,
+    output_dir="logs",
+):
     world = World(n_agents=n_agents, seed=seed, policy=policy, config=config)
     os.makedirs(output_dir, exist_ok=True)
 
     for _ in range(timesteps):
         world.step()
 
-    # Step-level log
-    step_log_path = os.path.join(output_dir, f"{scenario}_{policy}_seed_{seed}_step_log.csv")
+    step_log_path = os.path.join(
+        output_dir,
+        f"{scenario}_{policy}_seed_{seed}_step_log.csv",
+    )
     if world.step_log:
         with open(step_log_path, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=world.step_log[0].keys())
             writer.writeheader()
             writer.writerows(world.step_log)
 
-    # Agent-level log
-    agent_log_path = os.path.join(output_dir, f"{scenario}_{policy}_seed_{seed}_agent_log.csv")
+    agent_log_path = os.path.join(
+        output_dir,
+        f"{scenario}_{policy}_seed_{seed}_agent_log.csv",
+    )
     if world.agent_log:
         with open(agent_log_path, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=world.agent_log[0].keys())
@@ -49,7 +81,15 @@ def run_simulation(n_agents=50, timesteps=300, seed=42, policy="random", scenari
     return world
 
 
-def run_experiments(policies=("random", "rule"), seeds=(1, 2, 3, 4, 5), n_agents=50, timesteps=300):
+def run_experiments(
+    policies=None,
+    seeds=(1, 2, 3, 4, 5),
+    n_agents=50,
+    timesteps=300,
+):
+    if policies is None:
+        policies = POLICY_SETS[DEFAULT_POLICY_SET]
+
     scenarios = {
         "default": None,
         "moderate_scarcity": {
@@ -77,5 +117,57 @@ def run_experiments(policies=("random", "rule"), seeds=(1, 2, 3, 4, 5), n_agents
                 )
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run AI society simulation experiments."
+    )
+    parser.add_argument(
+        "--policy-set",
+        choices=sorted(POLICY_SETS.keys()),
+        default=DEFAULT_POLICY_SET,
+        help="Predefined policy set to run.",
+    )
+    parser.add_argument(
+        "--policies",
+        nargs="+",
+        default=None,
+        help="Optional explicit policy list. Overrides --policy-set.",
+    )
+    parser.add_argument(
+        "--seeds",
+        nargs="+",
+        type=int,
+        default=[1, 2, 3, 4, 5],
+        help="Seed values to run.",
+    )
+    parser.add_argument(
+        "--n-agents",
+        type=int,
+        default=50,
+        help="Number of agents in each simulation run.",
+    )
+    parser.add_argument(
+        "--timesteps",
+        type=int,
+        default=300,
+        help="Number of timesteps per simulation run.",
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    run_experiments()
+    args = parse_args()
+    selected_policies = args.policies or POLICY_SETS[args.policy_set]
+
+    print("Selected policy set:", args.policy_set)
+    print("Selected policies:", ", ".join(selected_policies))
+    print("Seeds:", args.seeds)
+    print("Agents:", args.n_agents)
+    print("Timesteps:", args.timesteps)
+
+    run_experiments(
+        policies=tuple(selected_policies),
+        seeds=tuple(args.seeds),
+        n_agents=args.n_agents,
+        timesteps=args.timesteps,
+    )
