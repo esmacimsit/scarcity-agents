@@ -156,7 +156,17 @@ def average_by_timestep(rows, metric):
     return averaged
 
 
-def plot_metric(rows, metric, ylabel, title, output_filename):
+def get_scenarios(rows):
+    """
+    Returns sorted scenario names found in the loaded step logs.
+    """
+    return sorted({row["scenario"] for row in rows})
+
+
+def plot_metric(rows, metric, ylabel, title, output_filename, scenario_filter=None):
+    if scenario_filter is not None:
+        rows = [row for row in rows if row["scenario"] == scenario_filter]
+
     averaged = average_by_timestep(rows, metric)
 
     plt.figure(figsize=(11, 6))
@@ -164,10 +174,14 @@ def plot_metric(rows, metric, ylabel, title, output_filename):
     for (scenario, policy), series in sorted(averaged.items()):
         timesteps = [item["timestep"] for item in series]
         values = [item[metric] for item in series]
-        label = f"{scenario} / {policy}"
+        label = policy if scenario_filter is not None else f"{scenario} / {policy}"
         plt.plot(timesteps, values, label=label)
 
-    plt.title(title)
+    plot_title = title
+    if scenario_filter is not None:
+        plot_title = f"{title} ({scenario_filter})"
+
+    plt.title(plot_title)
     plt.xlabel("Timestep")
     plt.ylabel(ylabel)
     plt.legend()
@@ -189,20 +203,24 @@ def parse_args():
         default=str(LOG_DIR),
         help="Directory containing *_step_log.csv files.",
     )
+    parser.add_argument(
+        "--split-by-scenario",
+        action="store_true",
+        help="Generate one set of figures per scenario instead of one combined figure.",
+    )
     return parser.parse_args()
 
 
-def main():
-    args = parse_args()
-    FIGURE_DIR.mkdir(parents=True, exist_ok=True)
-    rows = load_all_step_logs(log_dir=args.log_dir)
+def plot_all_metrics(rows, output_suffix="", scenario_filter=None):
+    suffix = f"_{output_suffix}" if output_suffix else ""
 
     plot_metric(
         rows=rows,
         metric="alive",
         ylabel="Alive Agents",
         title="Alive Agents Over Time",
-        output_filename="alive_over_time.png",
+        output_filename=f"alive_over_time{suffix}.png",
+        scenario_filter=scenario_filter,
     )
 
     plot_metric(
@@ -210,7 +228,8 @@ def main():
         metric="price",
         ylabel="Food Price",
         title="Food Price Over Time",
-        output_filename="price_over_time.png",
+        output_filename=f"price_over_time{suffix}.png",
+        scenario_filter=scenario_filter,
     )
 
     plot_metric(
@@ -218,7 +237,8 @@ def main():
         metric="gini_population",
         ylabel="Population Gini",
         title="Population Gini Over Time",
-        output_filename="gini_population_over_time.png",
+        output_filename=f"gini_population_over_time{suffix}.png",
+        scenario_filter=scenario_filter,
     )
 
     plot_metric(
@@ -226,8 +246,25 @@ def main():
         metric="gather_ratio",
         ylabel="Gather Ratio",
         title="Gather Ratio Over Time",
-        output_filename="gather_ratio_over_time.png",
+        output_filename=f"gather_ratio_over_time{suffix}.png",
+        scenario_filter=scenario_filter,
     )
+
+
+def main():
+    args = parse_args()
+    FIGURE_DIR.mkdir(parents=True, exist_ok=True)
+    rows = load_all_step_logs(log_dir=args.log_dir)
+
+    if args.split_by_scenario:
+        for scenario in get_scenarios(rows):
+            plot_all_metrics(
+                rows=rows,
+                output_suffix=scenario,
+                scenario_filter=scenario,
+            )
+    else:
+        plot_all_metrics(rows=rows)
 
 
 if __name__ == "__main__":
