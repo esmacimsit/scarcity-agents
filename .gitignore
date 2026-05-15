@@ -32,6 +32,7 @@ logs_to_read/
 
 # Generated fine-tune datasets
 /data/finetune/**/*.jsonl
+/data/lora/**/*.jsonl
 finetune_seed_*.zip
 
 # OS/editor files

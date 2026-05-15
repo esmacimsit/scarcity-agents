@@ -6,61 +6,61 @@ The dataset is generated from synthetic economy states labeled by a Qwen teacher
 
 ## Regime: `survival`
 
-Accepted examples: **300**
-Rejected examples: **0**
-Total generated/seen examples: **300**
-Acceptance rate: **100.0%**
+Accepted examples: **500**
+Rejected examples: **1**
+Total generated/seen examples: **501**
+Acceptance rate: **99.8%**
 
 ### Strict Metrics
 
 | Metric | Value |
 |---|---:|
-| `gather_ratio` | 0.433 |
-| `work_ratio` | 0.567 |
+| `gather_ratio` | 0.436 |
+| `work_ratio` | 0.564 |
 | `critical_food_gather_ratio` | 1.000 |
-| `high_scarcity_gather_ratio` | 1.000 |
-| `critical_food_total` | 60 |
-| `high_scarcity_total` | 120 |
+| `high_scarcity_gather_ratio` | 0.990 |
+| `critical_food_total` | 101 |
+| `high_scarcity_total` | 201 |
 
 ### Action Distribution
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `gather` | 130 | 43.3% |
-| `work` | 170 | 56.7% |
+| `gather` | 218 | 43.6% |
+| `work` | 282 | 56.4% |
 
 ### Food Coverage
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `critical_food_<=2` | 60 | 20.0% |
-| `low_food_2_4` | 34 | 11.3% |
-| `medium_food_4_7` | 91 | 30.3% |
-| `safe_food_>7` | 115 | 38.3% |
+| `critical_food_<=2` | 101 | 20.2% |
+| `low_food_2_4` | 60 | 12.0% |
+| `medium_food_4_7` | 153 | 30.6% |
+| `safe_food_>7` | 186 | 37.2% |
 
 ### Scarcity Coverage
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `extreme_scarcity_>2.4` | 70 | 23.3% |
-| `high_scarcity_1.7_2.4` | 50 | 16.7% |
-| `low_scarcity_<=1.1` | 105 | 35.0% |
-| `medium_scarcity_1.1_1.7` | 75 | 25.0% |
+| `extreme_scarcity_>2.4` | 119 | 23.8% |
+| `high_scarcity_1.7_2.4` | 82 | 16.4% |
+| `low_scarcity_<=1.1` | 171 | 34.2% |
+| `medium_scarcity_1.1_1.7` | 128 | 25.6% |
 
 ### Food Price Coverage
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `extreme_price_>7.5` | 44 | 14.7% |
-| `high_price_5_7.5` | 63 | 21.0% |
-| `low_price_<=2.5` | 101 | 33.7% |
-| `medium_price_2.5_5` | 92 | 30.7% |
+| `extreme_price_>7.5` | 76 | 15.2% |
+| `high_price_5_7.5` | 102 | 20.4% |
+| `low_price_<=2.5` | 173 | 34.6% |
+| `medium_price_2.5_5` | 149 | 29.8% |
 
 ### Duplicate / Conflict Check
 
 | Metric | Value |
 |---|---:|
-| `unique_signatures` | 300 |
+| `unique_signatures` | 500 |
 | `duplicate_groups` | 0 |
 | `duplicate_rows` | 0 |
 | `conflict_groups` | 0 |
@@ -70,7 +70,7 @@ Acceptance rate: **100.0%**
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| none | 0 | 0.0% |
+| `missing_label_for_example_id` | 1 | 100.0% |
 
 ### Warnings
 
@@ -82,61 +82,61 @@ Acceptance rate: **100.0%**
 
 ## Regime: `social_welfare`
 
-Accepted examples: **300**
-Rejected examples: **3**
-Total generated/seen examples: **303**
-Acceptance rate: **99.0%**
+Accepted examples: **500**
+Rejected examples: **9**
+Total generated/seen examples: **509**
+Acceptance rate: **98.2%**
 
 ### Strict Metrics
 
 | Metric | Value |
 |---|---:|
-| `gather_ratio` | 0.690 |
-| `work_ratio` | 0.310 |
+| `gather_ratio` | 0.692 |
+| `work_ratio` | 0.308 |
 | `critical_food_gather_ratio` | 1.000 |
-| `high_scarcity_gather_ratio` | 0.986 |
-| `critical_food_total` | 92 |
-| `high_scarcity_total` | 210 |
+| `high_scarcity_gather_ratio` | 0.989 |
+| `critical_food_total` | 154 |
+| `high_scarcity_total` | 348 |
 
 ### Action Distribution
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `gather` | 207 | 69.0% |
-| `work` | 93 | 31.0% |
+| `gather` | 346 | 69.2% |
+| `work` | 154 | 30.8% |
 
 ### Food Coverage
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `critical_food_<=2` | 92 | 30.7% |
-| `low_food_2_4` | 62 | 20.7% |
-| `medium_food_4_7` | 107 | 35.7% |
-| `safe_food_>7` | 39 | 13.0% |
+| `critical_food_<=2` | 154 | 30.8% |
+| `low_food_2_4` | 103 | 20.6% |
+| `medium_food_4_7` | 175 | 35.0% |
+| `safe_food_>7` | 68 | 13.6% |
 
 ### Scarcity Coverage
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `extreme_scarcity_>2.4` | 102 | 34.0% |
-| `high_scarcity_1.7_2.4` | 108 | 36.0% |
-| `low_scarcity_<=1.1` | 36 | 12.0% |
-| `medium_scarcity_1.1_1.7` | 54 | 18.0% |
+| `extreme_scarcity_>2.4` | 177 | 35.4% |
+| `high_scarcity_1.7_2.4` | 171 | 34.2% |
+| `low_scarcity_<=1.1` | 64 | 12.8% |
+| `medium_scarcity_1.1_1.7` | 88 | 17.6% |
 
 ### Food Price Coverage
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `extreme_price_>7.5` | 76 | 25.3% |
-| `high_price_5_7.5` | 111 | 37.0% |
-| `low_price_<=2.5` | 39 | 13.0% |
-| `medium_price_2.5_5` | 74 | 24.7% |
+| `extreme_price_>7.5` | 124 | 24.8% |
+| `high_price_5_7.5` | 191 | 38.2% |
+| `low_price_<=2.5` | 64 | 12.8% |
+| `medium_price_2.5_5` | 121 | 24.2% |
 
 ### Duplicate / Conflict Check
 
 | Metric | Value |
 |---|---:|
-| `unique_signatures` | 300 |
+| `unique_signatures` | 500 |
 | `duplicate_groups` | 0 |
 | `duplicate_rows` | 0 |
 | `conflict_groups` | 0 |
@@ -146,8 +146,8 @@ Acceptance rate: **99.0%**
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `social_welfare_deaths_scarcity_requires_gather` | 1 | 33.3% |
-| `social_welfare_high_price_scarcity_requires_gather` | 2 | 66.7% |
+| `social_welfare_deaths_scarcity_requires_gather` | 7 | 77.8% |
+| `social_welfare_high_price_scarcity_requires_gather` | 2 | 22.2% |
 
 ### Warnings
 
@@ -159,61 +159,61 @@ Acceptance rate: **99.0%**
 
 ## Regime: `wealth_maximizing`
 
-Accepted examples: **300**
+Accepted examples: **500**
 Rejected examples: **1**
-Total generated/seen examples: **301**
-Acceptance rate: **99.7%**
+Total generated/seen examples: **501**
+Acceptance rate: **99.8%**
 
 ### Strict Metrics
 
 | Metric | Value |
 |---|---:|
-| `gather_ratio` | 0.253 |
-| `work_ratio` | 0.747 |
+| `gather_ratio` | 0.270 |
+| `work_ratio` | 0.730 |
 | `critical_food_gather_ratio` | 1.000 |
-| `high_scarcity_gather_ratio` | 0.789 |
-| `critical_food_total` | 60 |
-| `high_scarcity_total` | 90 |
+| `high_scarcity_gather_ratio` | 0.807 |
+| `critical_food_total` | 100 |
+| `high_scarcity_total` | 150 |
 
 ### Action Distribution
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `gather` | 76 | 25.3% |
-| `work` | 224 | 74.7% |
+| `gather` | 135 | 27.0% |
+| `work` | 365 | 73.0% |
 
 ### Food Coverage
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `critical_food_<=2` | 60 | 20.0% |
-| `low_food_2_4` | 23 | 7.7% |
-| `medium_food_4_7` | 80 | 26.7% |
-| `safe_food_>7` | 137 | 45.7% |
+| `critical_food_<=2` | 100 | 20.0% |
+| `low_food_2_4` | 39 | 7.8% |
+| `medium_food_4_7` | 130 | 26.0% |
+| `safe_food_>7` | 231 | 46.2% |
 
 ### Scarcity Coverage
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `extreme_scarcity_>2.4` | 60 | 20.0% |
-| `high_scarcity_1.7_2.4` | 30 | 10.0% |
-| `low_scarcity_<=1.1` | 138 | 46.0% |
-| `medium_scarcity_1.1_1.7` | 72 | 24.0% |
+| `extreme_scarcity_>2.4` | 99 | 19.8% |
+| `high_scarcity_1.7_2.4` | 51 | 10.2% |
+| `low_scarcity_<=1.1` | 228 | 45.6% |
+| `medium_scarcity_1.1_1.7` | 122 | 24.4% |
 
 ### Food Price Coverage
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `extreme_price_>7.5` | 40 | 13.3% |
-| `high_price_5_7.5` | 41 | 13.7% |
-| `low_price_<=2.5` | 131 | 43.7% |
-| `medium_price_2.5_5` | 88 | 29.3% |
+| `extreme_price_>7.5` | 63 | 12.6% |
+| `high_price_5_7.5` | 74 | 14.8% |
+| `low_price_<=2.5` | 216 | 43.2% |
+| `medium_price_2.5_5` | 147 | 29.4% |
 
 ### Duplicate / Conflict Check
 
 | Metric | Value |
 |---|---:|
-| `unique_signatures` | 300 |
+| `unique_signatures` | 500 |
 | `duplicate_groups` | 0 |
 | `duplicate_rows` | 0 |
 | `conflict_groups` | 0 |
@@ -235,18 +235,18 @@ Acceptance rate: **99.7%**
 
 ## Global Summary
 
-Total accepted examples: **900**
-Total rejected examples: **4**
-Total seen examples: **904**
-Global acceptance rate: **99.6%**
+Total accepted examples: **1500**
+Total rejected examples: **11**
+Total seen examples: **1511**
+Global acceptance rate: **99.3%**
 Strict validation status: **PASS**
 
 ### Global Action Distribution
 
 | Item | Count | Ratio |
 |---|---:|---:|
-| `gather` | 413 | 45.9% |
-| `work` | 487 | 54.1% |
+| `gather` | 699 | 46.6% |
+| `work` | 801 | 53.4% |
 
 ### Next Steps
 
