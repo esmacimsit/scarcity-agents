@@ -26,8 +26,12 @@ htmlcov/
 
 # Generated simulation outputs
 logs/
+logs_to_read/
 *.csv
 *.png
+
+# Generated fine-tune datasets
+/data/finetune/**/*.jsonl
 
 # OS/editor files
 .DS_Store
