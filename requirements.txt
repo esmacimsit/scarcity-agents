@@ -1,2 +1,4 @@
 numpy==1.26.4
 matplotlib
+huggingface_hub
+mlx-lm
