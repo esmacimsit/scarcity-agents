@@ -1,5 +1,3 @@
-
-
 # Few-Shot LLM Smoke Test Results
 
 This document records the first smoke test for the few-shot LLM policies.
