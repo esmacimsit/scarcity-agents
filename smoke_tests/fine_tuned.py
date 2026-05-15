@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Smoke-test LoRA adapter inference for the AI Society project.
+Smoke-test fine-tuned LoRA adapter inference for the AI Society project.
 
-This script checks whether a saved MLX-LM LoRA adapter can be loaded and used
-for a small gather/work decision prompt.
+This script checks whether a saved MLX-LM LoRA adapter can be loaded with the
+final Qwen3-8B base model and used for small gather/work decision probes.
 
-It is intentionally a smoke test, not a model-quality evaluation.
+It is intentionally an adapter inference smoke test, not a final policy-quality
+evaluation suite.
 """
 
 from __future__ import annotations
@@ -18,8 +19,8 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MODEL = "Qwen/Qwen3-0.6B"
-DEFAULT_ADAPTER_PATH = PROJECT_ROOT / "adapters" / "smoke_survival_qwen3_06b"
+DEFAULT_MODEL = "Qwen/Qwen3-8B"
+DEFAULT_ADAPTER_PATH = PROJECT_ROOT / "adapters" / "qwen3_8b_survival"
 
 
 @dataclass(frozen=True)
@@ -33,7 +34,12 @@ SMOKE_CASES = [
     SmokeCase(
         name="critical_food_survival_should_gather",
         expected_hint="gather",
-        prompt="""You are an agent in a scarcity-based economy simulation. Follow the survival regime. Prioritize long-term personal survival. Choose gather when food is low or scarcity is dangerous. Choose work when food is safe and coin is needed. Return exactly one action: gather or work.
+        prompt="""You are an agent in a scarcity-based economy simulation. Follow the survival regime. Prioritize long-term personal survival. Choose gather when food is low or scarcity is dangerous. Choose work when food is safe and coin is needed.
+
+Do not think step by step.
+Do not explain.
+Do not output <think> tags.
+Return only one word: gather or work.
 
 Economy state:
 - timestep: 12
@@ -47,12 +53,17 @@ Economy state:
 - total_food: 80.0
 - scarcity_ratio: 2.5
 
-Choose exactly one action: gather or work.""",
+Return only one word: gather or work.""",
     ),
     SmokeCase(
         name="safe_food_low_coin_survival_should_work",
         expected_hint="work",
-        prompt="""You are an agent in a scarcity-based economy simulation. Follow the survival regime. Prioritize long-term personal survival. Choose gather when food is low or scarcity is dangerous. Choose work when food is safe and coin is needed. Return exactly one action: gather or work.
+        prompt="""You are an agent in a scarcity-based economy simulation. Follow the survival regime. Prioritize long-term personal survival. Choose gather when food is low or scarcity is dangerous. Choose work when food is safe and coin is needed.
+
+Do not think step by step.
+Do not explain.
+Do not output <think> tags.
+Return only one word: gather or work.
 
 Economy state:
 - timestep: 20
@@ -66,7 +77,7 @@ Economy state:
 - total_food: 250.0
 - scarcity_ratio: 0.7
 
-Choose exactly one action: gather or work.""",
+Return only one word: gather or work.""",
     ),
 ]
 
@@ -120,14 +131,14 @@ def normalize_output(text: str) -> str:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run smoke inference with an MLX-LM LoRA adapter.")
+    parser = argparse.ArgumentParser(description="Run smoke inference with a fine-tuned MLX-LM LoRA adapter.")
     parser.add_argument("--model", default=DEFAULT_MODEL, help="Base model or local model path.")
     parser.add_argument(
         "--adapter-path",
         default=str(DEFAULT_ADAPTER_PATH),
         help="Path to the saved LoRA adapter directory.",
     )
-    parser.add_argument("--max-tokens", type=int, default=5, help="Maximum generated tokens.")
+    parser.add_argument("--max-tokens", type=int, default=32, help="Maximum generated tokens.")
     return parser.parse_args()
 
 
@@ -139,7 +150,7 @@ def main() -> None:
         raise FileNotFoundError(f"Adapter path not found: {adapter_path}")
 
     print("=" * 80)
-    print("LoRA smoke inference test")
+    print("Fine-tuned LoRA inference smoke test")
     print(f"Model: {args.model}")
     print(f"Adapter: {adapter_path}")
 
@@ -161,7 +172,7 @@ def main() -> None:
         print(f"Normalized output: {normalized}")
 
     print("=" * 80)
-    print("Done. This smoke test only verifies adapter load/generation, not final policy quality.")
+    print("Done. This smoke test verifies fine-tuned adapter load/generation and provides lightweight behavioral probes.")
 
 
 if __name__ == "__main__":

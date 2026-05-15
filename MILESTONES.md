@@ -73,10 +73,15 @@ The project studies how different decision policies manipulate society-level eco
 - [x] CH4-010B Add batch-level teacher prompt/response logging
 - [x] CH4-010C Add strict validation thresholds and duplicate/conflict checks
 - [x] CH4-010D Generate 300-per-regime teacher-guided seed dataset and pass strict validation
-- [ ] CH4-011 Decide fine-tuning method and target model
-- [ ] CH4-012 Convert decision dataset to training format
-- [ ] CH4-013 Run mini fine-tune / adapter training
-- [ ] CH4-013A Select best checkpoint per behavior regime
+- [x] CH4-010E Generate 500-per-regime teacher-guided dataset and pass strict validation
+- [x] CH4-011 Decide fine-tuning method and target model: Qwen3 family, Qwen3-8B final target
+- [x] CH4-012 Convert decision dataset to LoRA train/validation format
+- [x] CH4-013 Run mini Qwen3-0.6B LoRA smoke training
+- [x] CH4-013A Run LoRA smoke inference test and document infrastructure result
+- [ ] CH4-013B Train Qwen3-8B survival adapter
+- [ ] CH4-013C Train Qwen3-8B social_welfare adapter
+- [ ] CH4-013D Train Qwen3-8B wealth_maximizing adapter
+- [ ] CH4-013E Select best checkpoint per behavior regime
 - [ ] CH4-014 Save fine-tuned model or adapter
 - [ ] CH4-015 Add fine-tuned prompt builder
 - [ ] CH4-016 Add fine-tuned policy module
@@ -111,28 +116,33 @@ Completed policy groups:
 Current CH4 status:
 
 - fine-tune strategy decided: three separate LoRA adapters, with single adapter as fallback
+- final target model strategy documented: Qwen3-8B with Qwen3-0.6B smoke testing
 - teacher-guided dataset pipeline implemented
 - Hugging Face teacher model integration tested
 - cache/resume support implemented and tested
 - batch-level teacher logging implemented
 - duplicate/conflict validation implemented
 - strict validation thresholds implemented
-- 300 accepted examples per regime generated
+- 500 accepted examples per regime generated
 - strict dataset validation passed
 - dataset backup zip created outside the tracked JSONL flow
+- accepted dataset converted to LoRA train/validation chat JSONL format
+- Qwen3-0.6B MLX LoRA smoke training completed
+- LoRA inference smoke test completed and documented as an infrastructure check
 
 Current dataset checkpoint:
 
 ```text
-survival:          300 accepted / 0 rejected / 100.0% acceptance
-social_welfare:    300 accepted / 3 rejected / 99.0% acceptance
-wealth_maximizing: 300 accepted / 1 rejected / 99.7% acceptance
+survival:          500 accepted / 1 rejected / 99.8% acceptance
+social_welfare:    500 accepted / 9 rejected / 98.2% acceptance
+wealth_maximizing: 500 accepted / 1 rejected / 99.8% acceptance
 
-global:            900 accepted / 4 rejected / 99.6% acceptance
+global:            1500 accepted / 11 rejected / 99.3% acceptance
 strict status:     PASS
 ```
 
 Next active phase:
 
-- CH4-011 — Decide final fine-tuning method and target model
-- CH4-012 — Convert accepted decision dataset to LoRA training format
+- CH4-013B — Train Qwen3-8B survival adapter
+- CH4-013C — Train Qwen3-8B social_welfare adapter
+- CH4-013D — Train Qwen3-8B wealth_maximizing adapter
