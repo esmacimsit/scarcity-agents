@@ -63,12 +63,16 @@ The project studies how different decision policies manipulate society-level eco
 - [x] CH4-002 Decide fine-tune architecture: three separate LoRA adapters, with single adapter as fallback
 - [x] CH4-003 Define fine-tune training data schema
 - [x] CH4-004 Create finetune_plan.md
-- [ ] CH4-005 Create data/finetune directory structure
-- [ ] CH4-006 Add synthetic fine-tune dataset generator
-- [ ] CH4-007 Add hybrid labeling rules for survival, social welfare, and wealth maximizing
-- [ ] CH4-008 Generate first fine-tune decision dataset
-- [ ] CH4-009 Validate dataset class balance and gather/work ratios
-- [ ] CH4-010 Write fine-tune dataset report
+- [x] CH4-005 Create data/finetune directory structure
+- [x] CH4-006 Add teacher-guided fine-tune dataset generator
+- [x] CH4-007 Add hybrid validator rules for survival, social welfare, and wealth maximizing
+- [x] CH4-008 Generate first teacher-guided fine-tune decision dataset
+- [x] CH4-009 Validate dataset class balance, coverage, duplicates, and gather/work ratios
+- [x] CH4-010 Write fine-tune dataset generation path and validation report
+- [x] CH4-010A Add cache/resume support for teacher-guided generation
+- [x] CH4-010B Add batch-level teacher prompt/response logging
+- [x] CH4-010C Add strict validation thresholds and duplicate/conflict checks
+- [x] CH4-010D Generate 300-per-regime teacher-guided seed dataset and pass strict validation
 - [ ] CH4-011 Decide fine-tuning method and target model
 - [ ] CH4-012 Convert decision dataset to training format
 - [ ] CH4-013 Run mini fine-tune / adapter training
@@ -104,6 +108,31 @@ Completed policy groups:
 - zero-shot LLM policies
 - few-shot LLM policies
 
+Current CH4 status:
+
+- fine-tune strategy decided: three separate LoRA adapters, with single adapter as fallback
+- teacher-guided dataset pipeline implemented
+- Hugging Face teacher model integration tested
+- cache/resume support implemented and tested
+- batch-level teacher logging implemented
+- duplicate/conflict validation implemented
+- strict validation thresholds implemented
+- 300 accepted examples per regime generated
+- strict dataset validation passed
+- dataset backup zip created outside the tracked JSONL flow
+
+Current dataset checkpoint:
+
+```text
+survival:          300 accepted / 0 rejected / 100.0% acceptance
+social_welfare:    300 accepted / 3 rejected / 99.0% acceptance
+wealth_maximizing: 300 accepted / 1 rejected / 99.7% acceptance
+
+global:            900 accepted / 4 rejected / 99.6% acceptance
+strict status:     PASS
+```
+
 Next active phase:
 
-- CH4 — Fine-Tuned LLM Policies
+- CH4-011 — Decide final fine-tuning method and target model
+- CH4-012 — Convert accepted decision dataset to LoRA training format
