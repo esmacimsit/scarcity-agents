@@ -59,10 +59,10 @@ The project studies how different decision policies manipulate society-level eco
 
 ## CH4 — Fine-Tuned LLM Policies
 
-- [ ] CH4-001 Decide fine-tune objective strategy
-- [ ] CH4-002 Decide single fine-tuned model vs three separate models
-- [ ] CH4-003 Define fine-tune training data schema
-- [ ] CH4-004 Create finetune_plan.md
+- [x] CH4-001 Decide fine-tune objective strategy
+- [x] CH4-002 Decide fine-tune architecture: three separate LoRA adapters, with single adapter as fallback
+- [x] CH4-003 Define fine-tune training data schema
+- [x] CH4-004 Create finetune_plan.md
 - [ ] CH4-005 Create data/finetune directory structure
 - [ ] CH4-006 Add synthetic fine-tune dataset generator
 - [ ] CH4-007 Add hybrid labeling rules for survival, social welfare, and wealth maximizing
@@ -72,6 +72,7 @@ The project studies how different decision policies manipulate society-level eco
 - [ ] CH4-011 Decide fine-tuning method and target model
 - [ ] CH4-012 Convert decision dataset to training format
 - [ ] CH4-013 Run mini fine-tune / adapter training
+- [ ] CH4-013A Select best checkpoint per behavior regime
 - [ ] CH4-014 Save fine-tuned model or adapter
 - [ ] CH4-015 Add fine-tuned prompt builder
 - [ ] CH4-016 Add fine-tuned policy module
