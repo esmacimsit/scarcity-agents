@@ -78,7 +78,11 @@ The project studies how different decision policies manipulate society-level eco
 - [x] CH4-012 Convert decision dataset to LoRA train/validation format
 - [x] CH4-013 Run mini Qwen3-0.6B LoRA smoke training
 - [x] CH4-013A Run LoRA smoke inference test and document infrastructure result
-- [ ] CH4-013B Train Qwen3-8B survival adapter
+- [x] CH4-013B Train Qwen3-8B survival adapter
+- [x] CH4-013B1 Run survival fine-tuned validation probes
+- [x] CH4-013B2 Add failure-driven survival augmentation
+- [x] CH4-013B3 Train Qwen3-8B survival v2 adapter
+- [x] CH4-013B4 Compare survival v1/v2 adapters and select survival v2
 - [ ] CH4-013C Train Qwen3-8B social_welfare adapter
 - [ ] CH4-013D Train Qwen3-8B wealth_maximizing adapter
 - [ ] CH4-013E Select best checkpoint per behavior regime
@@ -129,6 +133,11 @@ Current CH4 status:
 - accepted dataset converted to LoRA train/validation chat JSONL format
 - Qwen3-0.6B MLX LoRA smoke training completed
 - LoRA inference smoke test completed and documented as an infrastructure check
+- Qwen3-8B survival adapter v1 trained and probed
+- survival v1 showed mild work bias on validation probes
+- failure-driven survival augmentation created v2 dataset
+- Qwen3-8B survival adapter v2 trained and selected as current best survival checkpoint
+- survival v1/v2 comparison report documented
 
 Current dataset checkpoint:
 
@@ -141,8 +150,20 @@ global:            1500 accepted / 11 rejected / 99.3% acceptance
 strict status:     PASS
 ```
 
+Current survival adapter checkpoint:
+
+```text
+survival v1 adapter: adapters/qwen3_8b_survival
+survival v2 adapter: adapters/qwen3_8b_survival_v2
+selected survival adapter: survival v2
+
+v1 original validation probe: 85% accuracy, gather recall 70%, work recall 100%
+v2 original validation probe: 90% accuracy, gather recall 80%, work recall 100%
+augmented stress validation: v1 and v2 both 70%
+```
+
 Next active phase:
 
-- CH4-013B — Train Qwen3-8B survival adapter
 - CH4-013C — Train Qwen3-8B social_welfare adapter
 - CH4-013D — Train Qwen3-8B wealth_maximizing adapter
+- CH4-013E — Select best checkpoint per behavior regime

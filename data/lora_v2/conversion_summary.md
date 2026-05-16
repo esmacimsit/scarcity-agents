@@ -4,12 +4,12 @@ Teacher-guided accepted examples were converted into chat-style LoRA train/valid
 
 | Regime | Total | Train | Valid | Gather | Work |
 |---|---:|---:|---:|---:|---:|
-| `survival` | 850 | 765 | 85 | 468 | 382 |
+| `wealth_maximizing` | 650 | 585 | 65 | 235 | 415 |
 
 ## Output Paths
 
-### `survival`
+### `wealth_maximizing`
 
-- Input: `data/finetune/survival/survival_combined_accepted.jsonl`
-- Train: `data/lora_v2/survival/train.jsonl`
-- Valid: `data/lora_v2/survival/valid.jsonl`
+- Input: `data/finetune/wealth_maximizing/wealth_combined_accepted.jsonl`
+- Train: `data/lora_v2/wealth_maximizing/train.jsonl`
+- Valid: `data/lora_v2/wealth_maximizing/valid.jsonl`
