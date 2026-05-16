@@ -8,6 +8,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 LOG_DIR = PROJECT_ROOT / "logs"
 OUTPUT_PATH = PROJECT_ROOT / "experiment_summary.csv"
+DEFAULT_OUTPUT_PATH = OUTPUT_PATH
 
 
 def parse_policy_and_seed(file_path):
@@ -41,6 +42,9 @@ def parse_policy_and_seed(file_path):
         "llm_survival_few_shot",
         "llm_social_welfare_few_shot",
         "llm_wealth_maximizing_few_shot",
+        "finetuned_survival",
+        "finetuned_social_welfare",
+        "finetuned_wealth_maximizing",
     }
 
     policy = None
@@ -165,19 +169,24 @@ def collect_summaries(log_dir=LOG_DIR):
     return summaries
 
 
-def write_summary_csv(summaries):
+def write_summary_csv(summaries, output_path=DEFAULT_OUTPUT_PATH):
     if not summaries:
         print("No step log files found. Run `python main.py` first.")
         return
 
     fieldnames = list(summaries[0].keys())
 
-    with open(OUTPUT_PATH, "w", newline="") as f:
+    output_path = Path(output_path)
+    if not output_path.is_absolute():
+        output_path = PROJECT_ROOT / output_path
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(summaries)
 
-    print(f"Wrote experiment summary to: {OUTPUT_PATH}")
+    print(f"Wrote experiment summary to: {output_path}")
 
 
 def print_policy_averages(summaries):
@@ -215,13 +224,18 @@ def parse_args():
         default=str(LOG_DIR),
         help="Directory containing *_step_log.csv files.",
     )
+    parser.add_argument(
+        "--output",
+        default=str(DEFAULT_OUTPUT_PATH),
+        help="Output CSV path for the experiment summary.",
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     summaries = collect_summaries(log_dir=args.log_dir)
-    write_summary_csv(summaries)
+    write_summary_csv(summaries, output_path=args.output)
     print_policy_averages(summaries)
 
 

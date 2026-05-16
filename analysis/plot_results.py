@@ -36,6 +36,9 @@ def parse_step_log_filename(file_path):
         "llm_survival_few_shot",
         "llm_social_welfare_few_shot",
         "llm_wealth_maximizing_few_shot",
+        "finetuned_survival",
+        "finetuned_social_welfare",
+        "finetuned_wealth_maximizing",
     }
 
     policy = None
@@ -208,6 +211,11 @@ def parse_args():
         action="store_true",
         help="Generate one set of figures per scenario instead of one combined figure.",
     )
+    parser.add_argument(
+        "--output-dir",
+        default=str(FIGURE_DIR),
+        help="Directory where generated figures will be written.",
+    )
     return parser.parse_args()
 
 
@@ -253,6 +261,10 @@ def plot_all_metrics(rows, output_suffix="", scenario_filter=None):
 
 def main():
     args = parse_args()
+    global FIGURE_DIR
+    FIGURE_DIR = Path(args.output_dir)
+    if not FIGURE_DIR.is_absolute():
+        FIGURE_DIR = PROJECT_ROOT / FIGURE_DIR
     FIGURE_DIR.mkdir(parents=True, exist_ok=True)
     rows = load_all_step_logs(log_dir=args.log_dir)
 

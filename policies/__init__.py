@@ -1,6 +1,7 @@
 from policies.random_policy import decide_random_action
 from policies.rule_based import decide_rule_action
 from policies.few_shot import FEW_SHOT_LLM_POLICIES, decide_few_shot_action
+from policies.finetuned import FINE_TUNED_POLICIES, decide_fine_tuned_action
 from policies.zero_shot import ZERO_SHOT_LLM_POLICIES, decide_zero_shot_action
 
 
@@ -9,6 +10,7 @@ SUPPORTED_POLICIES = {
     "rule",
     *ZERO_SHOT_LLM_POLICIES,
     *FEW_SHOT_LLM_POLICIES,
+    *FINE_TUNED_POLICIES,
 }
 
 
@@ -30,6 +32,9 @@ def decide_policy_action(policy, context, rng, cfg):
 
     if policy in FEW_SHOT_LLM_POLICIES:
         return decide_few_shot_action(policy=policy, context=context)
+
+    if policy in FINE_TUNED_POLICIES:
+        return decide_fine_tuned_action(policy=policy, context=context)
 
     raise ValueError(f"Unknown policy: {policy}")
 

@@ -83,25 +83,27 @@ The project studies how different decision policies manipulate society-level eco
 - [x] CH4-013B2 Add failure-driven survival augmentation
 - [x] CH4-013B3 Train Qwen3-8B survival v2 adapter
 - [x] CH4-013B4 Compare survival v1/v2 adapters and select survival v2
-- [ ] CH4-013C Train Qwen3-8B social_welfare adapter
-- [ ] CH4-013D Train Qwen3-8B wealth_maximizing adapter
-- [ ] CH4-013E Select best checkpoint per behavior regime
-- [ ] CH4-014 Save fine-tuned model or adapter
-- [ ] CH4-015 Add fine-tuned prompt builder
-- [ ] CH4-016 Add fine-tuned policy module
-- [ ] CH4-017 Connect fine-tuned policies to router
-- [ ] CH4-018 Add fine-tuned policy-set to main.py
-- [ ] CH4-019 Update analysis parsers for fine-tuned policies
-- [ ] CH4-020 Add fine-tuned smoke test
-- [ ] CH4-021 Run fine-tuned smoke test and save CSV
-- [ ] CH4-022 Write fine-tuned smoke test report
-- [ ] CH4-023 Run small fine-tuned comparison experiment
-- [ ] CH4-024 Save clean fine-tuned experiment snapshot
-- [ ] CH4-025 Generate fine-tuned summary and scenario-split graphs
-- [ ] CH4-026 Write fine-tuned small experiment report
-- [ ] CH4-027 Compare zero-shot vs few-shot vs fine-tuned behavior
-- [ ] CH4-028 Decide final experiment scale
-- [ ] CH4-029 Run final comparison experiment if needed
+- [x] CH4-013C Train Qwen3-8B social_welfare adapter
+- [x] CH4-013D Train Qwen3-8B wealth_maximizing adapter
+- [x] CH4-013D1 Add failure-driven wealth_maximizing augmentation
+- [x] CH4-013D2 Train Qwen3-8B wealth_maximizing v2 adapter
+- [x] CH4-013E Select best checkpoint per behavior regime
+- [x] CH4-014 Save fine-tuned model or adapter
+- [x] CH4-015 Add fine-tuned prompt builder
+- [x] CH4-016 Add fine-tuned policy module
+- [x] CH4-017 Connect fine-tuned policies to router
+- [x] CH4-018 Add fine-tuned policy-set to main.py
+- [x] CH4-019 Update analysis parsers for fine-tuned policies
+- [x] CH4-020 Add fine-tuned smoke test
+- [x] CH4-021 Run fine-tuned smoke test and save CSV/log outputs
+- [x] CH4-022 Write fine-tuned smoke test report
+- [x] CH4-023 Run small fine-tuned comparison experiment
+- [x] CH4-024 Save clean fine-tuned experiment snapshot
+- [x] CH4-025 Generate fine-tuned summary and scenario-split graphs
+- [x] CH4-026 Write fine-tuned small experiment report
+- [x] CH4-027 Compare zero-shot vs few-shot vs fine-tuned behavior
+- [x] CH4-028 Decide final experiment scale
+- [x] CH4-029 Run final comparison experiment if needed
 - [ ] CH4-030 Write final project findings summary
 
 ---
@@ -138,6 +140,24 @@ Current CH4 status:
 - failure-driven survival augmentation created v2 dataset
 - Qwen3-8B survival adapter v2 trained and selected as current best survival checkpoint
 - survival v1/v2 comparison report documented
+- Qwen3-8B social_welfare adapter trained, probed, and accepted without augmentation
+- Qwen3-8B wealth_maximizing adapter v1 trained and probed
+- wealth_maximizing v1 showed mild work bias on gather-risk validation probes
+- failure-driven wealth_maximizing augmentation created v2 dataset
+- Qwen3-8B wealth_maximizing adapter v2 trained and selected as current best wealth checkpoint
+- final fine-tuned adapter selection report documented
+- fine-tuned runtime prompt builder implemented
+- fine-tuned policy module implemented
+- fine-tuned policies connected to policy router
+- fine-tuned policies executed through main.py smoke runs without hard runtime failures
+- fine-tuned smoke test report documented
+- small fine-tuned comparison experiment completed
+- fine-tuned small experiment report documented
+- fine-tuned experiment produced logs across default, moderate_scarcity, and scarcity scenarios
+- fine-tuned policies showed basic regime separation in the small experiment
+- analysis parser flow supports fine-tuned policy names through the existing policy/log naming path
+- final experiment scale decided: the completed small fine-tuned comparison experiment is sufficient for the current project scope
+- no additional fine-tuned comparison experiment is required for this phase
 
 Current dataset checkpoint:
 
@@ -162,8 +182,69 @@ v2 original validation probe: 90% accuracy, gather recall 80%, work recall 100%
 augmented stress validation: v1 and v2 both 70%
 ```
 
+Current selected fine-tuned adapter set:
+
+```text
+survival:          adapters/qwen3_8b_survival_v2
+social_welfare:    adapters/qwen3_8b_social_welfare
+wealth_maximizing: adapters/qwen3_8b_wealth_maximizing_v2
+```
+
+Current adapter probe checkpoint:
+
+```text
+survival selected adapter: survival v2
+survival original validation probe: 90% accuracy, gather recall 80%, work recall 100%
+
+social_welfare selected adapter: social_welfare v1
+social_welfare validation probe: 95% accuracy, gather recall 100%, work recall 90%
+
+wealth_maximizing selected adapter: wealth_maximizing v2
+wealth_maximizing stress validation probe: 90% accuracy, gather recall 80%, work recall 100%
+```
+
+Fine-tuned runtime integration checkpoint:
+
+```text
+prompt builder: complete
+policy module: complete
+policy router integration: complete
+main.py fine-tuned smoke runs: PASS
+hard runtime failures: 0
+```
+
+Current fine-tuned small experiment checkpoint:
+
+```text
+experiment scale: seed=1, agents=2, timesteps=3
+policies: finetuned_survival, finetuned_social_welfare, finetuned_wealth_maximizing
+scenarios: default, moderate_scarcity, scarcity
+status: PASS
+hard runtime failures: 0
+report: analysis/finetuned_small_experiment_report.md
+
+observed behavior:
+- survival: gather-oriented / conservative
+- social_welfare: shifts toward gather under scarcity pressure
+- wealth_maximizing: work-oriented
+```
+
+Final experiment scale decision:
+
+```text
+Decision: the completed small fine-tuned comparison experiment is the final experiment for the current project phase.
+
+Rationale:
+- adapter selection is complete
+- runtime integration is complete
+- smoke tests passed
+- small experiment ran through all selected fine-tuned policies and scenarios
+- logs were produced successfully
+- the observed behavior shows basic regime separation
+
+No additional comparison experiment is required for this phase.
+```
+
 Next active phase:
 
-- CH4-013C — Train Qwen3-8B social_welfare adapter
-- CH4-013D — Train Qwen3-8B wealth_maximizing adapter
-- CH4-013E — Select best checkpoint per behavior regime
+- CH4-030 — Write final project findings summary

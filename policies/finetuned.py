@@ -34,6 +34,12 @@ SELECTED_ADAPTERS: dict[str, Path] = {
     "wealth_maximizing": PROJECT_ROOT / "adapters" / "qwen3_8b_wealth_maximizing_v2",
 }
 
+FINE_TUNED_POLICIES: dict[str, str] = {
+    "finetuned_survival": "survival",
+    "finetuned_social_welfare": "social_welfare",
+    "finetuned_wealth_maximizing": "wealth_maximizing",
+}
+
 
 @dataclass(frozen=True)
 class FineTunedPolicyResult:
@@ -146,3 +152,13 @@ def choose_fine_tuned_action(
 def choose_action(regime: str, state: Mapping[str, Any]) -> str:
     """Small convenience wrapper for simulation code that only needs the action."""
     return choose_fine_tuned_action(regime=regime, state=state).action
+
+def decide_fine_tuned_action(policy: str, context: Mapping[str, Any]) -> str:
+    """Route a simulation policy name to the selected fine-tuned adapter."""
+    if policy not in FINE_TUNED_POLICIES:
+        valid = ", ".join(sorted(FINE_TUNED_POLICIES))
+        raise ValueError(f"Unknown fine-tuned policy: {policy!r}. Expected one of: {valid}")
+
+    regime = FINE_TUNED_POLICIES[policy]
+    return choose_action(regime=regime, state=context)
+
