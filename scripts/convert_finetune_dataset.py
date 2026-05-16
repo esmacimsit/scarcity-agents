@@ -30,6 +30,7 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FINETUNE_ROOT = PROJECT_ROOT / "data" / "finetune"
 LORA_ROOT = PROJECT_ROOT / "data" / "lora"
+DEFAULT_INPUT_FILENAME = "teacher_guided_accepted.jsonl"
 
 REGIMES = ["survival", "social_welfare", "wealth_maximizing"]
 ACTIONS = {"gather", "work"}
@@ -219,9 +220,19 @@ def percentage(part: int, total: int) -> str:
     return f"{(part / total) * 100:.1f}%"
 
 
-def convert_regime(regime: str, valid_ratio: float, seed: int, overwrite: bool) -> dict[str, Any]:
-    input_path = FINETUNE_ROOT / regime / "teacher_guided_accepted.jsonl"
-    output_dir = LORA_ROOT / regime
+def convert_regime(
+    regime: str,
+    valid_ratio: float,
+    seed: int,
+    overwrite: bool,
+    input_file: str,
+    output_root: Path,
+) -> dict[str, Any]:
+    input_path = Path(input_file)
+    if not input_path.is_absolute():
+        input_path = FINETUNE_ROOT / regime / input_file
+
+    output_dir = output_root / regime
     train_path = output_dir / "train.jsonl"
     valid_path = output_dir / "valid.jsonl"
 
@@ -257,6 +268,7 @@ def convert_regime(regime: str, valid_ratio: float, seed: int, overwrite: bool) 
         "train_count": len(train_examples),
         "valid_count": len(valid_examples),
         "valid_ratio": valid_ratio,
+        "output_root": str(output_root.relative_to(PROJECT_ROOT)),
         "action_distribution": dict(action_distribution(rows)),
         "train_action_distribution": dict(action_distribution(train_rows)),
         "valid_action_distribution": dict(action_distribution(valid_rows)),
@@ -264,8 +276,9 @@ def convert_regime(regime: str, valid_ratio: float, seed: int, overwrite: bool) 
 
 
 def write_summary(summary: list[dict[str, Any]]) -> None:
-    summary_path = LORA_ROOT / "conversion_summary.md"
-    LORA_ROOT.mkdir(parents=True, exist_ok=True)
+    output_root = Path(summary[0]["output_root"]) if summary else Path("data/lora")
+    summary_path = PROJECT_ROOT / output_root / "conversion_summary.md"
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
 
     lines = [
         "# LoRA Dataset Conversion Summary",
@@ -296,6 +309,7 @@ def write_summary(summary: list[dict[str, Any]]) -> None:
             [
                 f"### `{item['regime']}`",
                 "",
+                f"- Input: `{item['input']}`",
                 f"- Train: `{item['train']}`",
                 f"- Valid: `{item['valid']}`",
                 "",
@@ -331,11 +345,27 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Overwrite existing converted train/valid files.",
     )
+    parser.add_argument(
+        "--input-file",
+        default=DEFAULT_INPUT_FILENAME,
+        help=(
+            "Input JSONL filename under data/finetune/<regime>/, "
+            "or an absolute/relative path to a specific JSONL file."
+        ),
+    )
+    parser.add_argument(
+        "--output-root",
+        default=str(LORA_ROOT),
+        help="Output root directory for converted LoRA datasets.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    output_root = Path(args.output_root)
+    if not output_root.is_absolute():
+        output_root = PROJECT_ROOT / output_root
 
     summary = []
     for regime in args.regimes:
@@ -344,6 +374,8 @@ def main() -> None:
             valid_ratio=args.valid_ratio,
             seed=args.seed,
             overwrite=args.overwrite,
+            input_file=args.input_file,
+            output_root=output_root,
         )
         summary.append(result)
 
@@ -363,8 +395,8 @@ def main() -> None:
 
     write_summary(summary)
     print("=" * 80)
-    print("Done. LoRA datasets written under:", LORA_ROOT)
-    print("Summary written to:", LORA_ROOT / "conversion_summary.md")
+    print("Done. LoRA datasets written under:", output_root)
+    print("Summary written to:", output_root / "conversion_summary.md")
 
 
 if __name__ == "__main__":

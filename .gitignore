@@ -33,6 +33,7 @@ logs_to_read/
 # Generated fine-tune datasets
 /data/finetune/**/*.jsonl
 /data/lora/**/*.jsonl
+/data/lora_v2/**/*.jsonl
 /data/lora_smoke/
 /adapters/
 finetune_seed_*.zip
