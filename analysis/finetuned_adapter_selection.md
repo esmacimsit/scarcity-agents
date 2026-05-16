@@ -79,7 +79,7 @@ These probes are used for adapter selection and debugging. They are not the fina
 |---|---|---|---|---|---|
 | `survival` | `adapters/qwen3_8b_survival` | `adapters/qwen3_8b_survival_v2` | Yes | `survival_v2` | V2 improved original validation accuracy and gather recall while preserving work recall |
 | `social_welfare` | `adapters/qwen3_8b_social_welfare` | Not created | No | `social_welfare_v1` | V1 achieved strong validation probe performance; no augmentation needed for now |
-| `wealth_maximizing` | `adapters/qwen3_8b_wealth_maximizing` | `adapters/qwen3_8b_wealth_maximizing_v2` planned/in progress | Yes, planned/in progress | Pending | V1 showed mild work bias on gather-risk examples; targeted v2 augmentation is being tested |
+| `wealth_maximizing` | `adapters/qwen3_8b_wealth_maximizing` | `adapters/qwen3_8b_wealth_maximizing_v2` | Yes | `wealth_maximizing_v2` | V2 improved augmented stress validation accuracy from 80% to 90% while preserving 100% work recall |
 
 ---
 
@@ -404,9 +404,9 @@ low-to-medium food
 
 A targeted wealth v2 augmentation is therefore justified, but it should be smaller than survival augmentation so the wealth-maximizing behavior remains work-heavy.
 
-### 7.4 Wealth V2 Dataset Plan
+### 7.4 Wealth V2 Dataset
 
-The planned wealth v2 dataset is:
+The wealth v2 dataset was created as:
 
 ```text
 500 original teacher-guided examples
@@ -415,33 +415,94 @@ The planned wealth v2 dataset is:
 = 650 combined wealth examples
 ```
 
-Expected converted v2 LoRA dataset:
+Converted v2 LoRA dataset:
 
 ```text
 data/lora_v2/wealth_maximizing
 ```
 
-Expected v2 adapter path:
+V2 adapter path:
 
 ```text
 adapters/qwen3_8b_wealth_maximizing_v2
 ```
 
-### 7.5 Wealth Decision Status
+### 7.5 Wealth V2 Probe Result
 
-Current wealth decision:
+Wealth v2 on augmented / v2 validation set:
 
 ```text
-pending
+Accuracy: 90.00%
+Expected gather: 10
+Expected work:   10
 ```
 
-Current baseline:
+Confusion summary:
+
+```text
+expected=gather predicted=gather count=8
+expected=gather predicted=work   count=2
+expected=work   predicted=work   count=10
+```
+
+Interpretation:
+
+```text
+gather recall: 80%
+work recall:   100%
+overall:       90%
+```
+
+### 7.6 Wealth V1 on Augmented / V2 Validation Set
+
+Wealth v1 was also tested on the same augmented / v2 validation split for a fair comparison.
+
+```text
+Accuracy: 80.00%
+Expected gather: 10
+Expected work:   10
+```
+
+Confusion summary:
+
+```text
+expected=gather predicted=gather count=6
+expected=gather predicted=work   count=4
+expected=work   predicted=work   count=10
+```
+
+Interpretation:
+
+```text
+gather recall: 60%
+work recall:   100%
+overall:       80%
+```
+
+Compared with v1 on the same stress validation split, v2 improved accuracy from `80%` to `90%` and improved gather recall from `60%` to `80%` while preserving `100%` work recall.
+
+### 7.7 Wealth Decision
+
+Selected wealth adapter:
+
+```text
+adapters/qwen3_8b_wealth_maximizing_v2
+```
+
+Reason:
+
+```text
+V2 improves augmented stress validation accuracy from 80% to 90%.
+V2 improves gather recall from 60% to 80% on the stress validation split.
+V2 preserves work recall at 100%.
+V2 better captures the "selfish but not suicidal" gather-risk cases.
+```
+
+The v1 adapter should be kept as a baseline:
 
 ```text
 adapters/qwen3_8b_wealth_maximizing
 ```
-
-V2 should be trained and compared before selecting the final wealth adapter.
 
 ---
 
@@ -452,7 +513,7 @@ Current selected adapters:
 ```text
 survival:          adapters/qwen3_8b_survival_v2
 social_welfare:    adapters/qwen3_8b_social_welfare
-wealth_maximizing: pending v1/v2 comparison
+wealth_maximizing: adapters/qwen3_8b_wealth_maximizing_v2
 ```
 
 Current baselines to keep:
@@ -464,19 +525,23 @@ wealth_maximizing v1: adapters/qwen3_8b_wealth_maximizing
 
 ---
 
-## 9. Next Steps
+## 9. Final Adapter Set
 
-Immediate next steps:
+The selected fine-tuned adapter set is:
 
 ```text
-1. Train wealth_maximizing v2 adapter.
-2. Probe wealth v2 on original validation data.
-3. Probe wealth v1/v2 on augmented v2 validation data.
-4. Select best wealth adapter.
-5. Write final wealth v1/v2 comparison section.
+survival:          adapters/qwen3_8b_survival_v2
+social_welfare:    adapters/qwen3_8b_social_welfare
+wealth_maximizing: adapters/qwen3_8b_wealth_maximizing_v2
 ```
 
-After all three adapters are selected:
+All three adapters are now selected.
+
+---
+
+## 10. Next Steps
+
+After adapter selection, the next engineering steps are:
 
 ```text
 1. Add fine-tuned prompt builder.
