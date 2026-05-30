@@ -1,0 +1,57 @@
+.charts-panel {
+  background: rgba(15, 20, 25, 0.7);
+  border: 2px solid rgba(255, 220, 0, 0.3);
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 0 20px rgba(255, 220, 0, 0.1);
+  backdrop-filter: blur(6px);
+}
+
+.charts-panel h3 {
+  font-size: 16px;
+  margin-bottom: 15px;
+  text-shadow: 0 0 8px rgba(255, 220, 0, 0.4);
+  color: #ffdd00;
+}
+
+.chart-container {
+  margin-bottom: 15px;
+  background: rgba(15, 20, 25, 0.5);
+  border: 1px solid rgba(255, 220, 0, 0.2);
+  border-radius: 6px;
+  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+  border-color: rgba(255, 220, 0, 0.4);
+  background: rgba(15, 20, 25, 0.7);
+}
+
+.chart-container h4 {
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: rgba(0, 221, 119, 0.6);
+}
+
+.recharts-wrapper {
+  width: 100% !important;
+}
+
+.recharts-surface {
+  background: transparent !important;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: rgba(0, 221, 119, 0.5) !important;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.recharts-cartesian-grid-line {
+  stroke: rgba(0, 221, 119, 0.1) !important;
+}
+
+.recharts-line {
+  filter: drop-shadow(0 0 4px currentColor);
+  stroke-width: 2;
+}

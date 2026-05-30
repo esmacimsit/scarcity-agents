@@ -1,0 +1,169 @@
+.scenario-selector-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(0, 255, 100, 0.03);
+  border: 1px solid rgba(0, 255, 100, 0.2);
+  border-radius: 8px;
+  align-items: flex-end;
+  margin-bottom: 15px;
+}
+
+.selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 1 auto;
+}
+
+.selector-group label {
+  color: #00ff88;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  text-shadow: 0 0 6px rgba(0, 255, 100, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.selector-dropdown {
+  background: rgba(0, 30, 60, 0.6);
+  border: 2px solid rgba(0, 255, 100, 0.3);
+  color: #00ff88;
+  padding: 8px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s;
+  text-shadow: 0 0 6px rgba(0, 255, 100, 0.2);
+  min-width: 140px;
+  max-width: 160px;
+}
+
+.selector-dropdown:hover:not(:disabled) {
+  background: rgba(0, 255, 100, 0.1);
+  box-shadow: 0 0 12px rgba(0, 255, 100, 0.25);
+  border-color: rgba(0, 255, 100, 0.6);
+}
+
+.selector-dropdown:focus {
+  outline: none;
+  background: rgba(0, 255, 100, 0.12);
+  box-shadow: 0 0 15px rgba(0, 255, 100, 0.35);
+  border-color: rgba(255, 220, 0, 0.4);
+}
+
+.selector-dropdown:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(0, 30, 60, 0.3);
+  border-color: rgba(0, 255, 100, 0.1);
+}
+
+.selector-dropdown option {
+  background: #001a40;
+  color: #00ff88;
+  padding: 8px;
+}
+
+.selection-status {
+  padding: 10px;
+  background: rgba(0, 100, 50, 0.2);
+  border-left: 3px solid #00ff88;
+  border-radius: 2px;
+  color: #00dd77;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  word-break: break-all;
+  text-shadow: 0 0 4px rgba(0, 255, 100, 0.3);
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+/* Old styles for backwards compatibility */
+.scenario-selector {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.scenario-dropdown-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scenario-dropdown {
+  background: rgba(0, 255, 100, 0.05);
+  border: 2px solid rgba(0, 255, 100, 0.3);
+  color: #00ff88;
+  padding: 10px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 0.2s;
+  text-shadow: 0 0 8px rgba(0, 255, 100, 0.4);
+  max-width: 300px;
+}
+
+.scenario-dropdown:hover {
+  background: rgba(0, 255, 100, 0.1);
+  box-shadow: 0 0 15px rgba(0, 255, 100, 0.3);
+  border-color: rgba(0, 255, 100, 0.6);
+}
+
+.scenario-dropdown:focus {
+  outline: none;
+  background: rgba(0, 255, 100, 0.15);
+  box-shadow: 0 0 20px rgba(0, 255, 100, 0.5);
+  border-color: rgba(255, 220, 0, 0.5);
+}
+
+.scenario-dropdown option {
+  background: #0a0a0a;
+  color: #00ff88;
+}
+
+.scenario-count {
+  color: #00dd77;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  text-shadow: 0 0 6px rgba(0, 255, 100, 0.3);
+  white-space: nowrap;
+}
+
+/* Old button styles */
+.scenario-btn {
+  background: rgba(255, 100, 200, 0.08);
+  border: 2px solid rgba(255, 100, 200, 0.2);
+  color: #ff64c8;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 11px;
+  font-weight: bold;
+  transition: all 0.2s;
+  text-shadow: 0 0 8px rgba(255, 100, 200, 0.3);
+}
+
+.scenario-btn:hover {
+  background: rgba(255, 100, 200, 0.15);
+  box-shadow: 0 0 15px rgba(255, 100, 200, 0.3);
+  transform: scale(1.05);
+}
+
+.scenario-btn.active {
+  background: rgba(255, 100, 200, 0.2);
+  border-color: rgba(255, 220, 0, 0.4);
+  color: #ffdd00;
+  text-shadow: 0 0 10px rgba(255, 220, 0, 0.5);
+  box-shadow: 0 0 20px rgba(255, 220, 0, 0.2);
+}
