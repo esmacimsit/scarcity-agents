@@ -1,8 +1,18 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import './PixiWorldReplay.css';
+
+import aliveImageSrc from '../../../karakter/canlı.jpeg';
+import deadImageSrc from '../../../karakter/ölü.jpeg';
+
+const aliveImage = new Image();
+aliveImage.src = aliveImageSrc;
+
+const deadImage = new Image();
+deadImage.src = deadImageSrc;
 
 const PixiWorldReplay = ({ agentsData = [], maxWealth = 20 }) => {
   const canvasRef = useRef(null);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   
   // Generate deterministic positions for agents based on agent_id
   const agentPositions = useMemo(() => {
@@ -19,6 +29,21 @@ const PixiWorldReplay = ({ agentsData = [], maxWealth = 20 }) => {
     });
     return positions;
   }, [agentsData]);
+
+  // Resimlerin yüklenmesini bekle ve yüklendiğinde canvas'ı tekrar çizmesi için state'i güncelle
+  useEffect(() => {
+    let loaded = 0;
+    const onLoad = () => {
+      loaded += 1;
+      if (loaded >= 2) setImagesLoaded(true);
+    };
+
+    if (aliveImage.complete && aliveImage.naturalWidth > 0) onLoad(); else aliveImage.onload = onLoad;
+    if (deadImage.complete && deadImage.naturalWidth > 0) onLoad(); else deadImage.onload = onLoad;
+    
+    aliveImage.onerror = () => console.error("canlı.jpeg yüklenemedi. Çözümlenen yol:", aliveImageSrc);
+    deadImage.onerror = () => console.error("ölü.jpeg yüklenemedi. Çözümlenen yol:", deadImageSrc);
+  }, []);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -59,6 +84,7 @@ const PixiWorldReplay = ({ agentsData = [], maxWealth = 20 }) => {
       const x = pos.x * canvas.width;
       const y = pos.y * canvas.height;
       const radius = 6;
+      const imgSize = 32; // Resmin çizileceği boyut
 
       // Color based on wealth
       let color = '#00ff88'; // default green
@@ -68,20 +94,33 @@ const PixiWorldReplay = ({ agentsData = [], maxWealth = 20 }) => {
         color = '#ff0000'; // red if poor
       }
 
+      const isDead = agent.alive === false || agent.alive === 0 || agent.alive === 'False';
+
       // Gray out if dead
-      if (agent.alive === false || agent.alive === 0 || agent.alive === 'False') {
+      if (isDead) {
         color = '#555555';
       }
 
+      // Arkasına zenginlik/durum rengini gösteren hafif bir hale çiziyoruz
       ctx.fillStyle = color;
+      ctx.globalAlpha = 0.4;
       ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.arc(x, y, radius + 4, 0, Math.PI * 2);
       ctx.fill();
+      ctx.globalAlpha = 1.0;
 
-      // Draw outline
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      const currentImage = isDead ? deadImage : aliveImage;
+
+      if (imagesLoaded && currentImage.complete && currentImage.naturalWidth > 0) {
+        // Resim hazırsa karakterin resmini çiz
+        ctx.drawImage(currentImage, x - imgSize / 2, y - imgSize / 2, imgSize, imgSize);
+      } else {
+        // Resim yoksa veya henüz yüklenmediyse eski yuvarlak şekli çiz (Fallback)
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
       
       // Draw agent ID label for debugging
       ctx.fillStyle = '#00ff88';
@@ -89,7 +128,7 @@ const PixiWorldReplay = ({ agentsData = [], maxWealth = 20 }) => {
       ctx.fillText(agent.agent_id, x + 8, y - 8);
     });
 
-  }, [agentsData, maxWealth, agentPositions]);
+  }, [agentsData, maxWealth, agentPositions, imagesLoaded]);
 
   return <canvas ref={canvasRef} className="pixi-canvas" />;
 };
