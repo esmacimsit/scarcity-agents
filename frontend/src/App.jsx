@@ -4,7 +4,6 @@ import './App.css';
 // Lazy load components to catch import errors
 const PixiWorldReplay = React.lazy(() => import('./components/PixiWorldReplay'));
 const MetricsPanel = React.lazy(() => import('./components/MetricsPanel'));
-const ChartsPanel = React.lazy(() => import('./components/ChartsPanel'));
 const Controls = React.lazy(() => import('./components/Controls'));
 const ScenarioSelector = React.lazy(() => import('./components/ScenarioSelector'));
 
@@ -36,16 +35,22 @@ function App() {
     if (!selectedScenario) return;
     
     fetch(`/logs/${selectedScenario}.json`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to load scenario`);
+        return res.json();
+      })
       .then(data => {
+        if (!data || !data.step_log || data.step_log.length === 0) {
+          throw new Error('Invalid scenario data: missing or empty step_log');
+        }
         setSimulationData(data);
         setCurrentTimestep(0);
         setIsPlaying(false);
         setError(null);
       })
       .catch(err => {
-        console.error('Error:', err);
-        setError(err.message);
+        console.error('Error loading scenario:', err);
+        setError(`Failed to load ${selectedScenario}: ${err.message}`);
       });
   }, [selectedScenario]);
 
@@ -69,7 +74,7 @@ function App() {
   return (
     <div className="app">
       <div className="header">
-        <h1>⚡ Scarcity Agents Simulator</h1>
+        <h1>Scarcity Agents Simulator</h1>
         <React.Suspense fallback={<div>Loading...</div>}>
           <ScenarioSelector 
             selectedScenario={selectedScenario}
@@ -93,10 +98,6 @@ function App() {
             <MetricsPanel 
               stepData={currentStepData}
               policy={simulationData.metadata.policy}
-            />
-            <ChartsPanel 
-              stepLog={simulationData.step_log}
-              currentTimestep={currentTimestep}
             />
           </React.Suspense>
         </div>

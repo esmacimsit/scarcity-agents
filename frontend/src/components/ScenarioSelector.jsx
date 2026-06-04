@@ -251,7 +251,7 @@ const ScenarioSelector = ({ selectedScenario, onScenarioChange }) => {
       </div>
 
       <div className="selection-status">
-        {selectedScenario && <span>📍 {selectedScenario.replace(/^default_/, '')}</span>}
+        {selectedScenario && <span>{selectedScenario.replace(/^default_/, '')}</span>}
       </div>
     </div>
   );

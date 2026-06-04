@@ -19,11 +19,11 @@ const Controls = ({
           className={`play-button ${isPlaying ? 'playing' : ''}`}
           onClick={onPlayPause}
         >
-          {isPlaying ? '⏸ Pause' : '▶ Play'}
+          {isPlaying ? 'Pause' : 'Play'}
         </button>
 
         <button className="reset-button" onClick={() => onTimestepChange(0)}>
-          ⏮ Reset
+          Reset
         </button>
       </div>
 

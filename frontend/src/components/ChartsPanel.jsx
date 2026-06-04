@@ -3,8 +3,18 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } fro
 import './ChartsPanel.css';
 
 const ChartsPanel = ({ stepLog, currentTimestep }) => {
-  // Prepare data for charts
-  const chartData = stepLog.slice(0, currentTimestep + 1).map(step => ({
+  // Check if data exists
+  if (!stepLog || stepLog.length === 0) {
+    return (
+      <div className="charts-panel">
+        <h3>Live Metrics</h3>
+        <p style={{ color: '#888', padding: '20px' }}>No data available</p>
+      </div>
+    );
+  }
+
+  // Prepare data for charts - use all available data
+  const chartData = stepLog.map(step => ({
     timestep: step.timestep,
     alive: step.alive,
     price: step.price,
@@ -13,7 +23,7 @@ const ChartsPanel = ({ stepLog, currentTimestep }) => {
 
   return (
     <div className="charts-panel">
-      <h3>📈 Live Metrics</h3>
+      <h3>Live Metrics</h3>
 
       <div className="chart-container">
         <h4>Alive Agents</h4>
