@@ -33,11 +33,10 @@ def get_available_experiments() -> Dict[str, Dict[str, Path]]:
             scenario_name = file.name.replace("_step_log.csv", "")
             agent_log_file = LOGS_DIR / f"{scenario_name}_agent_log.csv"
             
-            if agent_log_file.exists():
-                experiments[scenario_name] = {
-                    "step_log": file,
-                    "agent_log": agent_log_file
-                }
+            experiments[scenario_name] = {
+                "step_log": file,
+                "agent_log": agent_log_file if agent_log_file.exists() else None
+            }
     
     # Scan logs_to_read subdirectories
     if LOGS_TO_READ_DIR.exists():

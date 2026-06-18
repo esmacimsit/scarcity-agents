@@ -10,7 +10,7 @@ aliveImage.src = aliveImageSrc;
 const deadImage = new Image();
 deadImage.src = deadImageSrc;
 
-const PixiWorldReplay = ({ agentsData = [], maxWealth = 20 }) => {
+const PixiWorldReplay = ({ agentsData = [], currentStep = 0, maxWealth = 20 }) => {
   const canvasRef = useRef(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   
@@ -77,14 +77,34 @@ const PixiWorldReplay = ({ agentsData = [], maxWealth = 20 }) => {
       ctx.lineTo(canvas.width, y);
       ctx.stroke();
     }
+    
+    // CSV'den gelen tüm ajan verisini timestep'e (mevcut adıma) göre filtrele
+    // Eğer timestep verisi yoksa veya filtre boş dönerse tamamını kullan
+    const currentAgents = agentsData.filter(
+      agent => agent.timestep === currentStep || agent.step === currentStep
+    );
+    const agentsToDraw = currentAgents.length > 0 ? currentAgents : agentsData;
 
     // Draw agents
-    agentsData.forEach(agent => {
-      const pos = agentPositions[agent.agent_id] || { x: 0.5, y: 0.5 };
-      const x = pos.x * canvas.width;
-      const y = pos.y * canvas.height;
-      const radius = 6;
-      const imgSize = 32; // Resmin çizileceği boyut
+    agentsToDraw.forEach(agent => {
+      let x, y;
+      
+      // Simülasyondan gelen gerçek pozisyonları (grid: 20x20) kullanmayı dene
+      if (agent.pos && Array.isArray(agent.pos)) {
+        x = (agent.pos[0] + 0.5) * (canvas.width / 20);
+        y = (agent.pos[1] + 0.5) * (canvas.height / 20);
+      } else if (agent.x !== undefined && agent.y !== undefined) {
+        x = (agent.x + 0.5) * (canvas.width / 20);
+        y = (agent.y + 0.5) * (canvas.height / 20);
+      } else {
+        // Yoksa rastgele üretilen pozisyonları kullan
+        const pos = agentPositions[agent.agent_id] || { x: 0.5, y: 0.5 };
+        x = pos.x * canvas.width;
+        y = pos.y * canvas.height;
+      }
+
+      const imgSize = 24; // Karelere daha iyi sığması için 32'den 24'e küçültüldü
+      const haloRadius = (imgSize / 2) + 4; // Resmin etrafında duracak zenginlik halesi
 
       // Color based on wealth
       let color = '#00ff88'; // default green
@@ -105,7 +125,7 @@ const PixiWorldReplay = ({ agentsData = [], maxWealth = 20 }) => {
       ctx.fillStyle = color;
       ctx.globalAlpha = 0.4;
       ctx.beginPath();
-      ctx.arc(x, y, radius + 4, 0, Math.PI * 2);
+      ctx.arc(x, y, haloRadius, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1.0;
 
@@ -113,12 +133,22 @@ const PixiWorldReplay = ({ agentsData = [], maxWealth = 20 }) => {
 
       if (imagesLoaded && currentImage.complete && currentImage.naturalWidth > 0) {
         // Resim hazırsa karakterin resmini çiz
+        ctx.save();
+        
+        // JPEG resimleri kare olduğu için onları çember şeklinde kırpıyoruz
+        ctx.beginPath();
+        ctx.arc(x, y, imgSize / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        
         ctx.drawImage(currentImage, x - imgSize / 2, y - imgSize / 2, imgSize, imgSize);
+        
+        ctx.restore();
       } else {
         // Resim yoksa veya henüz yüklenmediyse eski yuvarlak şekli çiz (Fallback)
         ctx.fillStyle = color;
         ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.arc(x, y, imgSize / 2, 0, Math.PI * 2);
         ctx.fill();
       }
       
@@ -128,7 +158,7 @@ const PixiWorldReplay = ({ agentsData = [], maxWealth = 20 }) => {
       ctx.fillText(agent.agent_id, x + 8, y - 8);
     });
 
-  }, [agentsData, maxWealth, agentPositions, imagesLoaded]);
+  }, [agentsData, currentStep, maxWealth, agentPositions, imagesLoaded]);
 
   return <canvas ref={canvasRef} className="pixi-canvas" />;
 };

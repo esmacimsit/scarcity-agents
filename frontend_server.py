@@ -16,11 +16,18 @@ import pandas as pd
 LOGS_DIR = Path(r"c:\Users\Lenovo\Desktop\ai_society\logs")
 LOGS_TO_READ_DIR = Path(r"c:\Users\Lenovo\Desktop\ai_society\logs_to_read")
 OUTPUT_DIR = Path(r"c:\Users\Lenovo\Desktop\bitirme projesi\scarcity-agents\frontend\public\logs")
-FRONTEND_PORT = 5173  # Vite default dev server port
+FRONTEND_PORT = 5172  # Backend server port (separate from Vite)
 
 
 class LogConversionServer(SimpleHTTPRequestHandler):
     """HTTP handler that serves logs and handles conversions."""
+    
+    def end_headers(self):
+        """Add CORS headers to all responses."""
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-type')
+        super().end_headers()
     
     def do_GET(self):
         """Handle GET requests."""
@@ -44,6 +51,29 @@ class LogConversionServer(SimpleHTTPRequestHandler):
                 "new_logs_converted": new_count,
                 "timestamp": datetime.now().isoformat()
             }).encode())
+        elif self.path.startswith('/logs/'):
+            # Serve static files from logs directory
+            file_path = OUTPUT_DIR / self.path[6:]  # Remove '/logs/' prefix
+            print(f"[LOG REQUEST] Path: {self.path}, File: {file_path}, Exists: {file_path.exists()}")
+            
+            try:
+                if file_path.exists() and file_path.is_file():
+                    self.send_response(200)
+                    if str(file_path).endswith('.json'):
+                        self.send_header('Content-type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    
+                    with open(file_path, 'rb') as f:
+                        self.wfile.write(f.read())
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+                    self.wfile.write(b'File not found')
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(f'Error: {e}'.encode())
         else:
             super().do_GET()
 
@@ -52,7 +82,11 @@ def convert_csv_to_json(step_log_path: Path, agent_log_path: Path, output_name: 
     """Convert CSV log files to JSON format."""
     try:
         step_df = pd.read_csv(step_log_path)
-        agent_df = pd.read_csv(agent_log_path)
+        
+        if agent_log_path and agent_log_path.exists():
+            agent_df = pd.read_csv(agent_log_path)
+        else:
+            agent_df = pd.DataFrame()
         
         policy = step_df['policy'].iloc[0] if len(step_df) > 0 else "unknown"
         
@@ -61,7 +95,7 @@ def convert_csv_to_json(step_log_path: Path, agent_log_path: Path, output_name: 
                 "policy": policy,
                 "source_files": {
                     "step_log": step_log_path.name,
-                    "agent_log": agent_log_path.name
+                    "agent_log": agent_log_path.name if agent_log_path else "not available"
                 }
             },
             "step_log": step_df.to_dict('records'),
@@ -92,10 +126,10 @@ def check_and_convert_new_logs() -> int:
             
             if scenario_name not in existing_jsons:
                 agent_log_file = LOGS_DIR / f"{scenario_name}_agent_log.csv"
-                if agent_log_file.exists():
-                    if convert_csv_to_json(file, agent_log_file, scenario_name):
-                        print(f"✓ Converted new log: {scenario_name}")
-                        converted_count += 1
+                agent_path = agent_log_file if agent_log_file.exists() else None
+                if convert_csv_to_json(file, agent_path, scenario_name):
+                    print(f"✓ Converted new log: {scenario_name}")
+                    converted_count += 1
     
     # Check logs_to_read subdirectories
     if LOGS_TO_READ_DIR.exists():
@@ -125,11 +159,11 @@ def refresh_all_logs() -> dict:
         for file in LOGS_DIR.glob("*_step_log.csv"):
             scenario_name = file.name.replace("_step_log.csv", "")
             agent_log_file = LOGS_DIR / f"{scenario_name}_agent_log.csv"
-            if agent_log_file.exists():
-                if convert_csv_to_json(file, agent_log_file, scenario_name):
-                    converted += 1
-                else:
-                    skipped += 1
+            agent_path = agent_log_file if agent_log_file.exists() else None
+            if convert_csv_to_json(file, agent_path, scenario_name):
+                converted += 1
+            else:
+                skipped += 1
     
     if LOGS_TO_READ_DIR.exists():
         for subdir in LOGS_TO_READ_DIR.iterdir():
@@ -172,6 +206,11 @@ def main():
     # Start monitoring thread
     monitor_thread = threading.Thread(target=monitor_logs_periodic, daemon=True)
     monitor_thread.start()
+    
+    # Change working directory to serve static files from frontend/public
+    public_dir = OUTPUT_DIR.parent
+    os.chdir(public_dir)
+    print(f"Serving static files from: {public_dir.resolve()}")
     
     print(f"Starting HTTP server on http://localhost:{FRONTEND_PORT}")
     print("Press Ctrl+C to stop\n")
