@@ -27,7 +27,7 @@ const ScenarioSelector = ({ selectedScenario, onScenarioChange }) => {
     if (!manifest) return [];
     const levels = new Set();
     manifest.available_scenarios.forEach(scenario => {
-      if (scenario.startsWith('default_') && !scenario.includes('moderate') && !scenario.includes('scarcity_')) {
+      if (scenario.startsWith('default_')) {
         levels.add('default');
       } else if (scenario.startsWith('moderate_scarcity_')) {
         levels.add('moderate_scarcity');
@@ -45,20 +45,18 @@ const ScenarioSelector = ({ selectedScenario, onScenarioChange }) => {
     
     manifest.available_scenarios.forEach(scenario => {
       let matchesScarcity = false;
-      if (scarcity === 'default' && scenario.startsWith('default_') && !scenario.includes('moderate') && !scenario.includes('scarcity_')) {
+      if (scarcity === 'default' && scenario.startsWith('default_')) {
         matchesScarcity = true;
       } else if (scarcity === 'moderate_scarcity' && scenario.startsWith('moderate_scarcity_')) {
         matchesScarcity = true;
-      } else if (scarcity === 'scarcity' && scenario.startsWith('scarcity_')) {
+      } else if (scarcity === 'scarcity' && scenario.startsWith(scarcity)) {
         matchesScarcity = true;
       }
       
       if (matchesScarcity) {
-        // Extract agent type - only 3 main types
-        if (scenario.includes('_random_')) types.add('random');
-        if (scenario.includes('_rule_')) types.add('rule-based');
-        // LLM includes fine-tuned and few-shot scenarios
-        if (scenario.includes('_llm_') || scenario.includes('_finetuned_') || scenario.includes('_few_shot_')) {
+        if (scenario.includes('_random')) types.add('random');
+        if (scenario.includes('_rule')) types.add('rule-based');
+        if (scenario.includes('_llm_') || scenario.includes('_finetuned_')) {
           types.add('llm');
         }
       }
@@ -74,18 +72,18 @@ const ScenarioSelector = ({ selectedScenario, onScenarioChange }) => {
     
     manifest.available_scenarios.forEach(scenario => {
       let matchesScarcity = false;
-      if (scarcity === 'default' && scenario.startsWith('default_') && !scenario.includes('moderate') && !scenario.includes('scarcity_')) {
+      if (scarcity === 'default' && scenario.startsWith('default_')) {
         matchesScarcity = true;
       } else if (scarcity === 'moderate_scarcity' && scenario.startsWith('moderate_scarcity_')) {
         matchesScarcity = true;
-      } else if (scarcity === 'scarcity' && scenario.startsWith('scarcity_')) {
+      } else if (scarcity === 'scarcity' && scenario.startsWith(scarcity)) {
         matchesScarcity = true;
       }
       
       if (matchesScarcity) {
         if (scenario.includes('_finetuned_')) types.add('fine-tuned');
-        if (scenario.includes('_few_shot_')) types.add('few-shot');
-        if (scenario.includes('_zero_shot_')) types.add('zero-shot');
+        if (scenario.includes('_few_shot')) types.add('few-shot');
+        if (scenario.includes('_llm_') && !scenario.includes('_few_shot')) types.add('zero-shot');
       }
     });
     
@@ -94,40 +92,31 @@ const ScenarioSelector = ({ selectedScenario, onScenarioChange }) => {
 
   // Get policies for current selection
   const getPolicies = () => {
-    if (!manifest || !scarcity || !agentType) return [];
-    
-    // If LLM is selected but no LLM subtype chosen, return empty
-    if (agentType === 'llm' && !llmType) return [];
+    if (!manifest || agentType !== 'llm' || !llmType) return [];
     
     const policies = new Set();
     manifest.available_scenarios.forEach(scenario => {
       let matchesScarcity = false;
       let matchesType = false;
       
-      // Check scarcity
-      if (scarcity === 'default' && scenario.startsWith('default_') && !scenario.includes('moderate') && !scenario.includes('scarcity_')) {
+      if (scarcity === 'default' && scenario.startsWith('default_')) {
         matchesScarcity = true;
       } else if (scarcity === 'moderate_scarcity' && scenario.startsWith('moderate_scarcity_')) {
         matchesScarcity = true;
-      } else if (scarcity === 'scarcity' && scenario.startsWith('scarcity_')) {
+      } else if (scarcity === 'scarcity' && scenario.startsWith(scarcity)) {
         matchesScarcity = true;
       }
       
-      // Check agent type
-      if (agentType === 'random' && scenario.includes('_random_')) {
-        matchesType = true;
-      } else if (agentType === 'rule-based' && scenario.includes('_rule_')) {
-        matchesType = true;
-      } else if (agentType === 'llm' && llmType) {
+      if (agentType === 'llm' && llmType) {
         if (llmType === 'fine-tuned' && scenario.includes('_finetuned_')) matchesType = true;
-        if (llmType === 'few-shot' && scenario.includes('_few_shot_')) matchesType = true;
-        if (llmType === 'zero-shot' && scenario.includes('_zero_shot_')) matchesType = true;
+        if (llmType === 'few-shot' && scenario.includes('_few_shot')) matchesType = true;
+        if (llmType === 'zero-shot' && scenario.includes('_llm_') && !scenario.includes('_few_shot')) matchesType = true;
       }
       
       if (matchesScarcity && matchesType) {
-        if (scenario.includes('_social_welfare_')) policies.add('social_welfare');
-        if (scenario.includes('_survival_')) policies.add('survival');
-        if (scenario.includes('_wealth_maximizing_')) policies.add('wealth_maximizing');
+        if (scenario.includes('_social_welfare')) policies.add('social_welfare');
+        if (scenario.includes('_survival')) policies.add('survival');
+        if (scenario.includes('_wealth_maximizing')) policies.add('wealth_maximizing');
       }
     });
     
@@ -136,42 +125,38 @@ const ScenarioSelector = ({ selectedScenario, onScenarioChange }) => {
 
   // Find and select scenario based on all filters
   useEffect(() => {
-    if (!manifest || !scarcity || !agentType || !policy) return;
-
-    let typeForFilename = agentType.replace('-', '_');
-    let methodForFilename = '';
-    
-    if (agentType === 'llm' && llmType) {
-      // LLM methods: "llm" + "_{policy}_{method}"
-      // Fine-tuned uses old format without "llm": "finetuned_{policy}"
-      // Few-shot and zero-shot use new format: "llm_{policy}_{method}"
-      if (llmType === 'fine-tuned') {
-        typeForFilename = 'finetuned';
-      } else {
-        typeForFilename = 'llm';
-        methodForFilename = `_${llmType.replace('-', '_')}`;
-      }
+    if (!manifest || !scarcity || !agentType) return;
+    if (agentType === 'llm' && (!llmType || !policy)) {
+        // For LLM, wait for subtype and policy
+        onScenarioChange('');
+        return;
     }
 
-    // Convert dash to underscore for filename
-    const policyForFilename = policy.replace('-', '_');
+    let scenario;
+    const scenarioPrefix = scarcity === 'default' ? 'default' : scarcity;
 
-    // Build scenario name
-    let scenario = '';
-    
-    if (scarcity === 'default') {
-      scenario = `default_${typeForFilename}_${policyForFilename}${methodForFilename}_seed_1`;
-    } else if (scarcity === 'moderate_scarcity') {
-      scenario = `moderate_scarcity_${typeForFilename}_${policyForFilename}${methodForFilename}_seed_1`;
-    } else if (scarcity === 'scarcity') {
-      scenario = `scarcity_${typeForFilename}_${policyForFilename}${methodForFilename}_seed_1`;
+    if (agentType === 'random') {
+        scenario = `${scenarioPrefix}_random_seed_1`;
+    } else if (agentType === 'rule-based') {
+        scenario = `${scenarioPrefix}_rule_seed_1`;
+    } else if (agentType === 'llm') {
+        const policyForFilename = policy.replace('-', '_');
+        if (llmType === 'fine-tuned') {
+            scenario = `${scenarioPrefix}_finetuned_${policyForFilename}_seed_1`;
+        } else if (llmType === 'few-shot') {
+            scenario = `${scenarioPrefix}_llm_${policyForFilename}_few_shot_seed_1`;
+        } else if (llmType === 'zero-shot') {
+            scenario = `${scenarioPrefix}_llm_${policyForFilename}_seed_1`;
+        }
     }
 
-    // Check if scenario exists
-    if (manifest.available_scenarios.includes(scenario)) {
+    if (scenario && manifest.available_scenarios.includes(scenario)) {
       onScenarioChange(scenario);
+    } else {
+      onScenarioChange('');
     }
   }, [scarcity, agentType, llmType, policy, manifest, onScenarioChange]);
+
 
   // Reset dependent selections
   useEffect(() => {
@@ -240,7 +225,7 @@ const ScenarioSelector = ({ selectedScenario, onScenarioChange }) => {
 
       <div className="selector-group">
         <label>Policy</label>
-        <select value={policy} onChange={(e) => setPolicy(e.target.value)} className="selector-dropdown" disabled={!agentType || (agentType === 'llm' && !llmType)}>
+        <select value={policy} onChange={(e) => setPolicy(e.target.value)} className="selector-dropdown" disabled={agentType !== 'llm' || !llmType}>
           <option value="">-- Select --</option>
           {policies.map(pol => (
             <option key={pol} value={pol}>

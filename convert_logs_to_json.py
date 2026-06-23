@@ -10,9 +10,9 @@ from pathlib import Path
 from typing import Dict, List, Any
 
 # Paths
-LOGS_DIR = Path(r"c:\Users\Lenovo\Desktop\ai_society\logs")
-LOGS_TO_READ_DIR = Path(r"c:\Users\Lenovo\Desktop\ai_society\logs_to_read")
-OUTPUT_DIR = Path(r"c:\Users\Lenovo\Desktop\bitirme projesi\scarcity-agents\frontend\public\logs")
+LOGS_DIR = Path(r"C:\Users\Lenovo\Desktop\log")
+LOGS_TO_READ_DIR = Path(r"C:\Users\Lenovo\Desktop\log")
+OUTPUT_DIR = Path(r"C:\Users\Lenovo\Desktop\bu\scarcity-agents\frontend\public\logs")
 
 # Ensure output directory exists
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -178,8 +178,10 @@ def create_scenario_manifest() -> None:
                 exp_type = "random"
             elif "rule" in scenario:
                 exp_type = "rule-based"
+            elif "llm" in scenario:
+                exp_type = "llm" 
             else:
-                exp_type = "llm"
+                exp_type = "baseline"
             
             # Create group key
             if "social_welfare" in scenario:
@@ -188,6 +190,10 @@ def create_scenario_manifest() -> None:
                 policy = "survival"
             elif "wealth_maximizing" in scenario:
                 policy = "wealth_maximizing"
+            elif "random" in scenario:
+                policy = "random"
+            elif "rule" in scenario:
+                policy = "rule"
             else:
                 policy = "baseline"
             
@@ -200,10 +206,9 @@ def create_scenario_manifest() -> None:
         manifest_path = OUTPUT_DIR / "manifest.json"
         with open(manifest_path, 'w') as f:
             json.dump(manifest, f, indent=2)
-        
+
         print(f"\n✓ Created scenario manifest with {len(experiments)} scenarios")
-        print(f"  Groups: {list(manifest['experiment_groups'].keys())}")
-        
+        print(f"  Groups found: {len(manifest['experiment_groups'])}")
     except Exception as e:
         print(f"✗ Error creating manifest: {e}")
 
@@ -248,6 +253,8 @@ def main():
     print(f"Output directory: {OUTPUT_DIR.resolve()}")
     print("="*60 + "\n")
 
-
 if __name__ == "__main__":
     main()
+
+
+
