@@ -30,6 +30,20 @@ POLICY_SETS = {
 
 DEFAULT_POLICY_SET = "baseline"
 
+SCENARIOS = {
+    "default": None,
+    "moderate_scarcity": {
+        "base_gain": 2.2,
+        "ideal_food_per_agent": 6.5,
+        "trade_limit_ratio": 0.4,
+    },
+    "scarcity": {
+        "base_gain": 1.7,
+        "ideal_food_per_agent": 7.0,
+        "trade_limit_ratio": 0.3,
+    },
+}
+
 
 def run_simulation(
     n_agents=50,
@@ -94,25 +108,25 @@ def run_experiments(
     seeds=(1, 2, 3, 4, 5),
     n_agents=50,
     timesteps=300,
+    scenarios=None,
 ):
     if policies is None:
         policies = POLICY_SETS[DEFAULT_POLICY_SET]
 
-    scenarios = {
-        "default": None,
-        "moderate_scarcity": {
-            "base_gain": 2.2,
-            "ideal_food_per_agent": 6.5,
-            "trade_limit_ratio": 0.4,
-        },
-        "scarcity": {
-            "base_gain": 1.7,
-            "ideal_food_per_agent": 7.0,
-            "trade_limit_ratio": 0.3,
-        },
-    }
+    if scenarios is None:
+        selected_scenarios = SCENARIOS.items()
+    else:
+        unknown_scenarios = [scenario for scenario in scenarios if scenario not in SCENARIOS]
+        if unknown_scenarios:
+            valid_scenarios = ", ".join(SCENARIOS.keys())
+            raise ValueError(
+                "Unknown scenario(s): "
+                f"{', '.join(unknown_scenarios)}. "
+                f"Valid scenarios: {valid_scenarios}"
+            )
+        selected_scenarios = ((scenario, SCENARIOS[scenario]) for scenario in scenarios)
 
-    for scenario, config in scenarios.items():
+    for scenario, config in selected_scenarios:
         for policy in policies:
             for seed in seeds:
                 run_simulation(
@@ -160,6 +174,13 @@ def parse_args():
         default=300,
         help="Number of timesteps per simulation run.",
     )
+    parser.add_argument(
+        "--scenarios",
+        nargs="+",
+        choices=sorted(SCENARIOS.keys()),
+        default=None,
+        help="Optional scenario list to run. Defaults to all scenarios.",
+    )
     return parser.parse_args()
 
 
@@ -172,10 +193,13 @@ if __name__ == "__main__":
     print("Seeds:", args.seeds)
     print("Agents:", args.n_agents)
     print("Timesteps:", args.timesteps)
+    if args.scenarios is not None:
+        print("Scenarios:", ", ".join(args.scenarios))
 
     run_experiments(
         policies=tuple(selected_policies),
         seeds=tuple(args.seeds),
         n_agents=args.n_agents,
         timesteps=args.timesteps,
+        scenarios=None if args.scenarios is None else tuple(args.scenarios),
     )
