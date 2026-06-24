@@ -30,6 +30,12 @@ logs_to_read/
 *.csv
 *.png
 
+# Keep dashboard public files required by the React demo.
+!simulation/simulation_web/public/final_logs/
+!simulation/simulation_web/public/final_logs/**
+!simulation/simulation_web/public/assets/
+!simulation/simulation_web/public/assets/**
+
 # Generated fine-tune datasets
 /data/finetune/**/*.jsonl
 /data/lora/**/*.jsonl
